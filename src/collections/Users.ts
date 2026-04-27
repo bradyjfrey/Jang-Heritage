@@ -14,10 +14,9 @@ export const Users: CollectionConfig = {
   auth: true,
   fields: [
     {
-      // Stays optional during early migrations so existing rows aren't a
-      // schema-push blocker. Flip to required:true once every user has one.
       name: 'displayName',
       type: 'text',
+      required: true,
       admin: {
         description: 'Shown in editor dropdowns and on document pages.',
       },
