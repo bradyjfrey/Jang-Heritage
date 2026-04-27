@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Editing: Obituary for Reverend K. N. Long · Jang Heritage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          paper: '#FAF6EF', 'paper-warm': '#F5EFE0', surface: '#FFFFFF',
+          ink: '#2A1F1A', 'ink-soft': '#6B5D52', 'ink-faint': '#9C8E81',
+          seal: '#8B2D29', 'seal-soft': '#B25652',
+          gold: '#A8843E', 'gold-soft': '#C9A865',
+          'border-soft': '#E5DCC8', 'border-strong': '#C8B998'
+        }
+      }}
+    }
+  </script>
+  <link rel="stylesheet" href="_shared.css">
+  <style>
+    /* Viewport-locked editor: header (56px) + main (1fr) = 100vh. No footer; metadata lives on the document page. */
+    body { overflow: hidden; height: 100vh; }
+    .edit-shell { display: grid; grid-template-rows: 56px 1fr; height: 100vh; }
+    .edit-main { overflow: hidden; min-height: 0; }
+
+    /* Every pane (image, chinese, english) shares the same internal grid:
+       header on top (auto), body fills the rest (1fr). */
+    .pane { display: grid !important; grid-template-rows: auto 1fr; min-height: 0 !important; overflow: hidden; }
+    .pane-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.625rem 1rem; border-bottom: 1px solid var(--border-soft);
+      background: var(--paper-warm); font-size: 0.8125rem;
+    }
+    .pane-body { padding: 1.5rem; min-height: 0; overflow: auto; }
+
+    /* Image pane: scroll-area scrolls vertically; image fills width, natural height. */
+    .image-pane > .scroll-area { min-height: 0; overflow-y: auto; overflow-x: hidden; }
+    .image-pane img.scan { width: 100%; height: auto; display: block; }
+
+    /* The text-panes wrapper contributes nothing to layout, in both modes. */
+    .text-panes { display: contents !important; }
+
+    textarea.editor {
+      width: 100%; height: 100%;
+      resize: none; border: 0; background: transparent; outline: none;
+      font-size: 1rem; line-height: 1.3; color: var(--ink);
+    }
+    textarea.editor:focus { background: rgba(255,255,255,0.55); }
+
+    /* Per-pane text size adjusters, styled like .pill-btn */
+    .size-btn {
+      min-width: 1.6rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border-soft);
+      background: var(--surface);
+      color: var(--ink-soft);
+      cursor: pointer; font-weight: 600; line-height: 1;
+    }
+    .size-btn:hover { background: var(--paper-warm); color: var(--ink); }
+    .size-btn[data-action="dec"] { font-size: 0.7rem; }
+    .size-btn[data-action="inc"] { font-size: 0.95rem; }
+
+    /* Wide (>=1280px): three columns image | 中文 | English. */
+    @media (min-width: 1280px) {
+      .edit-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1px;
+        background: var(--border-soft);
+      }
+      .pane { background: var(--paper); }
+    }
+
+    /* Narrow (<1280px): three stacked rows at 20% / 40% / 40% of edit-main. */
+    @media (max-width: 1279.98px) {
+      .edit-main {
+        display: grid;
+        grid-template-rows: 20% 40% 40%;
+        grid-template-columns: 1fr;
+        gap: 1px;
+        background: var(--border-soft);
+      }
+      .pane { background: var(--paper); }
+    }
+  </style>
+</head>
+<body class="font-sans">
+
+<div class="edit-shell">
+
+  <!-- COMPACT HEADER -->
+  <header class="border-b border-[color:var(--border-soft)] bg-paper flex items-center px-4 gap-4">
+    <a href="document.html" class="text-ink-soft hover:text-ink text-sm flex items-center gap-1">
+      <span>←</span> Back
+    </a>
+    <div class="h-6 w-px bg-[color:var(--border-soft)]"></div>
+    <div class="flex-1 min-w-0">
+      <input type="text" value="Obituary for Reverend K. N. Long"
+        class="w-full max-w-xl bg-transparent border-0 font-serif-content text-lg focus:outline-none focus:bg-white focus:rounded focus:px-2 focus:py-0.5">
+    </div>
+    <span class="save-status"><span class="dot"></span>Saved 3s ago</span>
+    <div class="h-6 w-px bg-[color:var(--border-soft)]"></div>
+    <button class="pill-btn">History</button>
+    <div class="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium">B</div>
+  </header>
+
+  <!-- THREE-COLUMN MAIN (responsive) -->
+  <div class="edit-main">
+
+    <!-- IMAGE PANE -->
+    <div class="image-pane pane">
+      <div class="pane-header">
+        <div class="flex items-center gap-2">
+          <button class="pill-btn">←</button>
+          <span class="text-ink-soft">Scan <span class="text-ink font-medium">1</span> of 1</span>
+          <button class="pill-btn">→</button>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button class="pill-btn">−</button>
+          <button class="pill-btn">100%</button>
+          <button class="pill-btn">+</button>
+          <button class="pill-btn">⛶</button>
+          <button class="pill-btn">⤓</button>
+        </div>
+      </div>
+      <div class="scroll-area overflow-auto bg-paper-warm flex items-start justify-center p-4">
+        <img src="sample_obituary.jpg" alt="Scan 1 of 1" class="scan rounded shadow-sm">
+      </div>
+    </div>
+
+    <!-- TEXT PANES -->
+    <div class="text-panes contents">
+      <!-- CHINESE -->
+      <div class="pane flex flex-col min-h-0">
+        <div class="pane-header">
+          <div class="flex items-center gap-2">
+            <span class="font-cjk text-base">中文录入</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5" title="Adjust text size">
+              <button class="size-btn" data-action="dec" aria-label="Decrease text size">A</button>
+              <button class="size-btn" data-action="inc" aria-label="Increase text size">A</button>
+            </div>
+            <span class="text-ink-faint text-xs">1,247 chars</span>
+          </div>
+        </div>
+        <div class="pane-body">
+          <textarea class="editor font-cjk" spellcheck="false">梁桂巖牧師傳畧 （略）
+
+梁桂巖牧師，又號奕攀，廣東新興縣梧洞石崗鄉人。少抱大志，好學不倦，因家貧，早歲出門謀生，不拘小節，樂與江湖俠士結交，旋厠身為梨園子弟，並習外科藝術，乃以治跌打刀傷馳名。又走軍界，辛亥反政，糾合同志，如周康，黃明堂等輩，在順德，樂從，組織革命軍，一度攻入廣州督署，及將軍衙。隨後成立北伐敢死隊，任營長官職，真不愧為革命實行家。未歲，得聞福音，研究聖經，在民國三年，決心信道，乃由喜嘉理牧師施洗，而為基督徒，同時愿獻身為主作工，宣傳真理，歷任台山斛牛山南村等處福音堂工作，且自告奮勇，曾親入古兜，大洞窿等危險地方，向綠林豪客佈道，如出入無人之境，全無驚懼。俟一九二四年，受聘來美，任三藩市基督徒會禮拜堂傳道之職，同時亦為大埠協和中學創辦人之一，至任滿告辭，乃就山科路埠中華學校教職有年，至一九二八年二月始來羅省，膺任本會傳道主任，逾兩年，再由西人總會封以牧師榮銜，時值本會新堂建立未久，負債仍鉅，梁牧師乃發動籌款還債計劃，先成立互助月會，以經濟互助精神，將其利潤支除若干歸屬本會，又編白話劇，發售入場券，故籌款成績，亦差強人意，惜因欠過鉅，未即清還，至一九三五年，梁牧師告辭回國，籌款計劃，于焉停止。直至一九三九年，梁牧師乃將舊事重提，為籌款還樓債事，繼續努力，卒能籌足其數，清還樓債。同時梁牧師因孚眾望，被選任為本埠中華會館主席，連任四年，並推為籌建中華學校募捐主任，抗戰時期，任救國會監察委員，竭力奔走，籌集賑款，寄回祖國，救濟傷病難民，又任華南兒童教養院羅省分會會長十有多年，先後籌捐匯回之款，亦復不少，早年周伯琴牧師來美，為華南兒童教養院籌集經費，駕臨羅省，成立籌委會，又推梁牧師為主任，策劃運籌，不辭勞瘁，結果竟能籌集美金逾萬，成績優異，嘉惠孤雛，其功不可沒也。他在一九四六年，因體弱多病，將本會傳道職告辭休養，但仍任要職，為會務服勞，擘劃尤多，今年復被選為本埠中華基督教聯會會長，不料在本月五日清晨，頓覺身體不適，隨而胸部疼痛不可忍，乃即延醫診視，醫生斷為血窒危急之症，要入院調治，豈知手術不靈，藥石無效，竟於該晚十一時半，撒手塵寰，魂歸帝鄉，噩耗傳來，聞者惋悼，享壽六十有七歲，膺任本會傳道職，先後共十七年，其先室劉氏，繼室關氏，性賢淑，現居中國，正擬來美團聚，但仍未成行，子女共六名，愛貞，愛華，愛琼，亦在中國，均已適人，幼女愛恩，早年在此與黃卓元君結婚，現居屋崙，男女外孫共有十名，長男哲文，為政府服役三年，獲獎少尉銜，在本年四月秒退伍，擬入大學，以求深造，次男哲武，亦在求學中，均奉侍左右，親視含殮，擇定本月十八日下午二時，舉行出殯禮，寄葬於本埠玫瑰墳場，迴憶牧師為人，賦性豪爽，重義輕財，一生所入：除為教養兒女長成，賙濟親鄰貧苦外，僅餘爛屋一座，在廣州市，平時待人接物，彬彬有禮，各界人士，樂與交遊，尤好排難解紛，更加見義勇為，舉凡社會中慈善公益教育等事業，均樂肯犧牲效勞，久為僑界所欽仰，核其一生行事，已成三不朽觀，嗟嗟，哲人其萎，良牧云亡，豐功長留，音容永杳。凡讀斯篇者，其亦有人琴之感歟。主降一九四九年六月中澣
+
+羅省中華網紀慎同人敬撰</textarea>
+        </div>
+      </div>
+
+      <!-- ENGLISH -->
+      <div class="pane flex flex-col min-h-0">
+        <div class="pane-header">
+          <div class="flex items-center gap-2">
+            <span class="text-base">English</span>
+            <span class="text-ink-faint">·</span>
+            <span class="text-ink-soft">Translation</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5" title="Adjust text size">
+              <button class="size-btn" data-action="dec" aria-label="Decrease text size">A</button>
+              <button class="size-btn" data-action="inc" aria-label="Increase text size">A</button>
+            </div>
+            <span class="text-ink-faint text-xs">1,128 words</span>
+          </div>
+        </div>
+        <div class="pane-body">
+          <textarea class="editor font-serif-content" spellcheck="true">Brief Biography of Reverend Liang Guiyan
+
+Reverend Liang Guiyan, also known by the name Yipan, was a native of Shigang Village, Wudong, in Xinning County (now Xinyi City), Guangdong Province. From a young age, he harbored great ambitions and was tireless in his studies. Due to family poverty, he left home early to seek a livelihood. Unconstrained by trivial formalities, he enjoyed befriending righteous and chivalrous individuals. He briefly joined an opera troupe as a performer and also studied the art of external medicine, later becoming renowned for treating injuries from falls and wounds.
+
+He subsequently became involved in military circles. During the 1911 Revolution, he rallied comrades such as Zhou Kang and Huang Mingtang, organizing a revolutionary army in Shunde and Lecong. They once attacked the Governor's Office and the General's Yamen (e.g., magistrate's court) in Guangzhou. Later, he helped establish a Northern Expedition Dare-to-Die Corps, serving as a battalion commander, truly proving himself a practitioner of revolution.
+
+In his later years, he encountered the Gospel and studied the Bible. In the third year of the Republic of China (1914), he resolved to believe and was baptized by Reverend H. R. H. G. becoming a Christian. Simultaneously, he vowed to dedicate himself to the Lord's work, preaching the truth. He successively served in gospel churches in places such as Taishan and Nancun, Honiushan. He even volunteered to personally enter dangerous areas like Gudou and Dadonglong to preach to bandits and outlaws, moving as if through unpopulated land, entirely without fear.
+
+In 1924, he was invited to the United States, taking up the position of preacher at the Christian Church in San Francisco. He was also one of the founders of Xiehe Secondary School in San Francisco. After his term concluded, he resigned and taught for several years at the Chinese School in Stockton. In February 1928, he finally came to Los Angeles to assume the position of Preaching Director of our church.
+
+After more than two years, he was ordained as a Reverend by the Western General Assembly. At that time, our church's new building had just been completed, and the debt remained substantial. Reverend Liang initiated a fundraising plan to repay the debt. He first established a Mutual Aid Monthly Society, utilizing the spirit of economic mutual aid, directing a portion of its profits to our church. He also compiled vernacular plays and sold admission tickets. Thus, the fundraising results were fairly satisfactory, though unfortunately, due to the excessive debt, it was not immediately cleared.
+
+By 1935, Reverend Liang resigned and returned to China, and the fundraising plan consequently halted. It wasn't until 1939 that Reverend Liang revived the old plan, continuing efforts specifically to raise funds to clear the building debt. He ultimately succeeded in raising the full amount and clearing the debt.
+
+Concurrently, because Reverend Liang enjoyed high public esteem, he was elected Chairman of the local Chinese Consolidated Benevolent Association, serving for four consecutive years. He was also appointed Director of Fundraising for the construction of a Chinese School. During the War of Resistance against Japan, he served as a Supervisory Committee member for the Save the Nation Association, striving diligently to raise relief funds sent back to China to aid wounded soldiers and refugees. He also served as President of the Los Angeles Branch of the South China Children's Home for over ten years, raising and remitting a significant amount of funds over the years.
+
+Earlier, when Reverend Zhou Boqin came to the U.S. to raise funds for the South China Children's Home and visited Los Angeles, a fundraising committee was established, again electing Reverend Liang as Director. He planned and strategized, sparing no effort, ultimately managing to raise over ten thousand U.S. dollars, an outstanding achievement that greatly benefited orphaned children. His contribution cannot be overlooked.
+
+In 1946, due to physical weakness and illness, he resigned from his preaching duties at our church to convalesce. However, he still held important positions and served the church's affairs, contributing particularly to planning and strategy. This year, he was again elected President of the local Chinese Christian Union.
+
+Unexpectedly, on the morning of the 5th of this month, he suddenly felt unwell, followed by unbearable chest pain. A doctor was summoned immediately, who diagnosed a critical condition of blood stagnation (likely a heart attack or stroke) and recommended hospitalization for treatment. Unfortunately, medical procedures were ineffective, and medicines provided no cure. He passed away at half-past eleven that night, departing this mortal world and returning to the Heavenly Home. The sad news brought grief and mourning to all who heard it. He was sixty-seven years old.
+
+He served as Preaching Director of our church for a total of seventeen years, intermittently. His first wife was née Liu, and his subsequent wife was née Guan; both were virtuous and now reside in China. Plans were being made for them to come to the U.S. for reunion, but this had not yet happened. He had six children in total: Aizhen, Aihua, Aiqiong (all in China and married), and his younger daughter Aien, who previously married Mr. Huang Zhuoyuan here and now lives in Oakland. There are ten grandchildren in total.
+
+His eldest son, Zhewen, served in government service for three years, receiving a commission as a Second Lieutenant. He was discharged at the end of April this year and plans to enter university for further studies. His second son, Zhewu, is also studying. Both sons were present at his side, attending to him and overseeing the funeral arrangements.
+
+The funeral procession is scheduled for the 18th of this month at 2:00 PM, with interim burial at the local Rose Hills Memorial Park.
+
+Reflecting on Reverend Liang's character: he was endowed with a bold and straightforward nature, valued righteousness over wealth. Throughout his life, his earnings, besides raising his children to adulthood and aiding poor and suffering relatives and neighbors, left only a dilapidated house in Guangzhou City. In daily interactions, he was courteous and refined, and people from all walks of life enjoyed his friendship. He was particularly adept at resolving difficulties and disputes and was even more ready to act courageously for a just cause. He was always willing to sacrifice and serve in charitable, public welfare, and educational endeavors within the community, long admired by the overseas Chinese community.
+
+Considering the events of his life, he has already achieved the three imperishable (moral character, meritorious service, and enduring teachings). Alas! The wise man withers; the good shepherd is gone. His great achievements remain long behind; his voice and countenance are forever lost. All who read this account, will they not share the sentiment of mourning for a departed friend?
+
+Written mid-June, 1949
+By the Congregation of the Chinese Christian Church of Los Angeles, with respect.</textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.size-btn');
+    if (!btn) return;
+    const pane = btn.closest('.pane');
+    const ta = pane && pane.querySelector('textarea.editor');
+    if (!ta) return;
+    const current = parseFloat(getComputedStyle(ta).fontSize) || 16;
+    const next = btn.dataset.action === 'inc'
+      ? Math.min(current + 2, 32)
+      : Math.max(current - 2, 12);
+    ta.style.fontSize = next + 'px';
+  });
+</script>
+
+</body>
+</html>

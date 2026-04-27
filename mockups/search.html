@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Search · Jang Heritage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          paper: '#FAF6EF', 'paper-warm': '#F5EFE0', surface: '#FFFFFF',
+          ink: '#2A1F1A', 'ink-soft': '#6B5D52', 'ink-faint': '#9C8E81',
+          seal: '#8B2D29', 'seal-soft': '#B25652',
+          gold: '#A8843E', 'gold-soft': '#C9A865',
+          'border-soft': '#E5DCC8', 'border-strong': '#C8B998'
+        }
+      }}
+    }
+  </script>
+  <link rel="stylesheet" href="_shared.css">
+</head>
+<body class="font-sans">
+
+<header class="border-b border-[color:var(--border-soft)] bg-paper sticky top-0 z-20">
+  <div class="flex items-center gap-6 px-6 h-16">
+    <a href="home.html" class="flex items-center gap-2.5 shrink-0">
+      <span class="font-cjk text-3xl text-seal leading-none">陳</span>
+      <span class="font-serif-content text-lg tracking-tight">Jang Heritage</span>
+    </a>
+    <div class="flex-1 max-w-3xl">
+      <div class="relative">
+        <input type="text" value="父親"
+          class="w-full bg-surface border-2 border-gold rounded-md pl-10 pr-16 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gold/30">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z"/></svg>
+      </div>
+    </div>
+    <div class="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium shrink-0">B</div>
+  </div>
+  <!-- Horizontal nav, sits under the main header on every page -->
+  <nav class="border-t border-[color:var(--border-soft)]">
+    <div class="flex items-center gap-4 px-6 py-2 text-sm">
+      <a href="home.html" class="text-ink-soft hover:text-ink">Home</a>
+      <a href="list.html" class="text-seal font-medium">Documents</a>
+      <a href="#" class="text-ink-soft hover:text-ink">Tags</a>
+      <a href="#" class="text-ink-soft hover:text-ink">History</a>
+      <a href="#" class="ml-auto text-ink-soft hover:text-ink inline-flex items-center" title="Settings" aria-label="Settings">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94 0 .31.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<div class="flex">
+  <!-- FILTER SIDEBAR -->
+  <aside class="w-72 border-r border-[color:var(--border-soft)] bg-paper p-6 sticky top-16 self-start min-h-[calc(100vh-4rem)] overflow-auto">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-serif-content text-lg">Refine</h2>
+      <button class="text-xs text-seal hover:underline">Clear</button>
+    </div>
+
+    <div class="space-y-6 text-sm">
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Match in</div>
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-2"><input type="checkbox" checked> 中文 transcription <span class="text-ink-faint ml-auto text-xs">28</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked> English translation <span class="text-ink-faint ml-auto text-xs">14</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked> Title &amp; metadata <span class="text-ink-faint ml-auto text-xs">9</span></label>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Type</div>
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-2"><input type="checkbox" checked> Letter <span class="text-ink-faint ml-auto text-xs">19</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" checked> Diary <span class="text-ink-faint ml-auto text-xs">8</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> Photo <span class="text-ink-faint ml-auto text-xs">2</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> Article <span class="text-ink-faint ml-auto text-xs">1</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> Document <span class="text-ink-faint ml-auto text-xs">3</span></label>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Date range</div>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="number" placeholder="From" class="bg-surface border border-[color:var(--border-soft)] rounded px-2 py-1.5">
+          <input type="number" placeholder="To" class="bg-surface border border-[color:var(--border-soft)] rounded px-2 py-1.5">
+        </div>
+      </div>
+
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Tags</div>
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-2"><input type="checkbox"> family <span class="text-ink-faint ml-auto text-xs">21</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> father <span class="text-ink-faint ml-auto text-xs">18</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> mother <span class="text-ink-faint ml-auto text-xs">9</span></label>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Translator</div>
+        <select class="w-full bg-surface border border-[color:var(--border-soft)] rounded px-2 py-1.5">
+          <option>Anyone</option><option>Brady</option><option>Untranslated</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RESULTS -->
+  <main class="flex-1 p-8 max-w-5xl">
+    <div class="flex items-end justify-between mb-6">
+      <div>
+        <h1 class="font-serif-content text-2xl mb-1">42 results for <span class="font-cjk text-seal">父親</span></h1>
+        <p class="text-sm text-ink-soft">Searched both Chinese (segmented) and English; ranked by relevance.</p>
+      </div>
+      <select class="bg-surface border border-[color:var(--border-soft)] rounded px-3 py-1.5 text-sm">
+        <option>Most relevant</option><option>Newest first</option><option>Oldest first</option>
+      </select>
+    </div>
+
+    <ul class="space-y-3">
+      <!-- Result 1: Chinese hit -->
+      <li>
+        <a href="document.html" class="flex gap-4 bg-surface border border-[color:var(--border-soft)] rounded-lg p-4 hover:border-gold transition">
+          <div class="scan-placeholder w-24 h-32 rounded shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-cjk text-xs text-seal bg-seal/10 px-2 py-0.5 rounded">中文 match</span>
+              <span class="chip">letter</span>
+              <span class="text-xs text-ink-soft">·  20 Mar 1924</span>
+            </div>
+            <h3 class="font-serif-content text-lg mb-1">Letter to Father, Spring 1924</h3>
+            <p class="text-sm font-cjk text-ink-soft leading-relaxed">…兒自離家以來已逾半載，每念家中老幼，心常戚然。兒於舊金山洗衣鋪做工，雖辛勞，每月略可存銀，已托同鄉王君寄洋銀十五元回家…<mark class="snippet font-cjk">父親</mark>大人膝下…</p>
+            <div class="mt-2 flex items-center gap-2 text-xs text-ink-soft">
+              <span>From 楊志</span><span>·</span><span>3 scans</span><span>·</span><span>Translated</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <!-- Result 2: English hit -->
+      <li>
+        <a href="document.html" class="flex gap-4 bg-surface border border-[color:var(--border-soft)] rounded-lg p-4 hover:border-gold transition">
+          <div class="scan-placeholder w-24 h-32 rounded shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-seal bg-seal/10 px-2 py-0.5 rounded">EN match</span>
+              <span class="chip">letter</span>
+              <span class="text-xs text-ink-soft">·  3 Oct 1925</span>
+            </div>
+            <h3 class="font-serif-content text-lg mb-1">Letter to Father, Autumn 1925</h3>
+            <p class="text-sm text-ink-soft leading-relaxed font-serif-content">…I write to my honored <mark class="snippet">father</mark> with news of the autumn, the cold has come early to San Francisco this year, and I am wearing the coat that mother sent…</p>
+            <div class="mt-2 flex items-center gap-2 text-xs text-ink-soft">
+              <span>From 楊志</span><span>·</span><span>2 scans</span><span>·</span><span>Translated</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <!-- Result 3: Title match -->
+      <li>
+        <a href="document.html" class="flex gap-4 bg-surface border border-[color:var(--border-soft)] rounded-lg p-4 hover:border-gold transition">
+          <div class="scan-placeholder w-24 h-32 rounded shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-gold bg-gold/10 px-2 py-0.5 rounded">Title match</span>
+              <span class="chip">diary</span>
+              <span class="text-xs text-ink-soft">·  June 1925</span>
+            </div>
+            <h3 class="font-serif-content text-lg mb-1">Diary, Thinking of <mark class="snippet">father</mark>, June 1925</h3>
+            <p class="text-sm text-ink-soft leading-relaxed font-cjk">…六月十二日 晴。今日見鄰居老者，恍若<mark class="snippet font-cjk">父親</mark>面容，獨自落淚良久…</p>
+            <div class="mt-2 flex items-center gap-2 text-xs text-ink-soft">
+              <span>1 scan</span><span>·</span><span class="italic">untranslated</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <!-- Result 4: Chinese hit -->
+      <li>
+        <a href="document.html" class="flex gap-4 bg-surface border border-[color:var(--border-soft)] rounded-lg p-4 hover:border-gold transition">
+          <div class="scan-placeholder w-24 h-32 rounded shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-cjk text-xs text-seal bg-seal/10 px-2 py-0.5 rounded">中文 match</span>
+              <span class="chip">letter</span>
+              <span class="text-xs text-ink-soft">·  18 May 1924</span>
+            </div>
+            <h3 class="font-serif-content text-lg mb-1">Letter mentioning Mr. Wang, May 1924</h3>
+            <p class="text-sm font-cjk text-ink-soft leading-relaxed">…王君前日來訪，言其將返鄉省親，遂托其攜帶銀錢與信件，回家轉交<mark class="snippet font-cjk">父親</mark>大人手中…</p>
+            <div class="mt-2 flex items-center gap-2 text-xs text-ink-soft">
+              <span>From 楊志</span><span>·</span><span>2 scans</span><span>·</span><span>Translated</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <!-- Result 5: Both hit -->
+      <li>
+        <a href="document.html" class="flex gap-4 bg-surface border border-[color:var(--border-soft)] rounded-lg p-4 hover:border-gold transition">
+          <div class="scan-placeholder w-24 h-32 rounded shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-cjk text-xs text-seal bg-seal/10 px-2 py-0.5 rounded">中文 match</span>
+              <span class="text-xs text-seal bg-seal/10 px-2 py-0.5 rounded">EN match</span>
+              <span class="chip">letter</span>
+              <span class="text-xs text-ink-soft">·  11 Oct 1923</span>
+            </div>
+            <h3 class="font-serif-content text-lg mb-1">Family letter, Autumn 1923</h3>
+            <p class="text-sm text-ink-soft leading-relaxed font-serif-content">…my dear <mark class="snippet">father</mark>, I have arrived safely at the hotel in Sacramento and am writing to assure you of my health…</p>
+            <p class="text-sm text-ink-soft leading-relaxed font-cjk mt-1">…安抵沙加緬度旅館，<mark class="snippet font-cjk">父親</mark>勿念…</p>
+            <div class="mt-2 flex items-center gap-2 text-xs text-ink-soft">
+              <span>From 楊志</span><span>·</span><span>4 scans</span><span>·</span><span>Translated</span>
+            </div>
+          </div>
+        </a>
+      </li>
+    </ul>
+
+    <!-- PAGINATION -->
+    <div class="flex items-center justify-between mt-10 text-sm text-ink-soft">
+      <div>Showing 1-5 of 42</div>
+      <div class="flex items-center gap-1">
+        <button class="pill-btn">‹</button>
+        <button class="pill-btn bg-seal/10 text-seal border-seal/30">1</button>
+        <button class="pill-btn">2</button>
+        <button class="pill-btn">3</button>
+        <span class="px-1">…</span>
+        <button class="pill-btn">9</button>
+        <button class="pill-btn">›</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

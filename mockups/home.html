@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Home · Jang Heritage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          paper: '#FAF6EF', 'paper-warm': '#F5EFE0', surface: '#FFFFFF',
+          ink: '#2A1F1A', 'ink-soft': '#6B5D52', 'ink-faint': '#9C8E81',
+          seal: '#8B2D29', 'seal-soft': '#B25652',
+          gold: '#A8843E', 'gold-soft': '#C9A865',
+          'border-soft': '#E5DCC8', 'border-strong': '#C8B998'
+        }
+      }}
+    }
+  </script>
+  <link rel="stylesheet" href="_shared.css">
+</head>
+<body class="font-sans">
+
+<!-- TOP BAR -->
+<header class="border-b border-[color:var(--border-soft)] bg-paper sticky top-0 z-20">
+  <div class="flex items-center gap-6 px-6 h-16">
+    <a href="home.html" class="flex items-center gap-2.5 shrink-0">
+      <span class="font-cjk text-3xl text-seal leading-none">陳</span>
+      <span class="font-serif-content text-lg tracking-tight">Jang Heritage</span>
+    </a>
+    <div class="flex-1 max-w-xl">
+      <div class="relative">
+        <input type="text" placeholder="Search 中文 or English…"
+          class="w-full bg-surface border border-[color:var(--border-soft)] rounded-md pl-10 pr-16 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z"/></svg>
+        <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-ink-soft border border-[color:var(--border-soft)] rounded px-1.5 py-0.5 bg-paper-warm">⌘K</kbd>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <div class="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium">B</div>
+    </div>
+  </div>
+  <!-- Horizontal nav, sits under the main header on every page -->
+  <nav class="border-t border-[color:var(--border-soft)]">
+    <div class="flex items-center gap-4 px-6 py-2 text-sm">
+      <a href="home.html" class="text-seal font-medium">Home</a>
+      <a href="list.html" class="text-ink-soft hover:text-ink">Documents</a>
+      <a href="#" class="text-ink-soft hover:text-ink">Tags</a>
+      <a href="#" class="text-ink-soft hover:text-ink">History</a>
+      <a href="#" class="ml-auto text-ink-soft hover:text-ink inline-flex items-center" title="Settings" aria-label="Settings">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94 0 .31.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main class="px-10 py-10 max-w-6xl mx-auto">
+    <!-- WELCOME -->
+    <div class="flex items-end justify-between mb-10">
+      <div>
+        <h1 class="font-serif-content text-3xl mb-1">Welcome back, Brady</h1>
+        <p class="text-ink-soft">Continue translating your grandfather-in-law's archive.</p>
+      </div>
+      <a href="edit-new.html" class="bg-seal text-white px-5 py-2.5 rounded-md font-medium hover:bg-seal/90 inline-flex items-center gap-2">
+        <span class="text-lg leading-none">+</span> New entry
+      </a>
+    </div>
+
+    <!-- STATS STRIP -->
+    <div class="grid grid-cols-4 gap-4 mb-12">
+      <div class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Total entries</div>
+        <div class="font-serif-content text-3xl">147</div>
+      </div>
+      <div class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Transcribed</div>
+        <div class="font-serif-content text-3xl">82 <span class="text-base text-ink-soft">/ 147</span></div>
+      </div>
+      <div class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Translated</div>
+        <div class="font-serif-content text-3xl">31 <span class="text-base text-ink-soft">/ 147</span></div>
+      </div>
+      <div class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Last edit</div>
+        <div class="font-serif-content text-lg">Today, 2:41pm</div>
+        <div class="text-xs text-ink-soft mt-1">by you</div>
+      </div>
+    </div>
+
+    <!-- RECENT EDITS -->
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-serif-content text-xl">Recently edited</h2>
+      <a href="list.html" class="text-sm text-seal hover:underline">View all →</a>
+    </div>
+    <div class="grid grid-cols-3 gap-5 mb-12">
+      <a href="document.html" class="block bg-surface border border-[color:var(--border-soft)] rounded-lg overflow-hidden hover:border-gold transition">
+        <div class="scan-placeholder h-44"></div>
+        <div class="p-4">
+          <div class="font-serif-content text-base mb-1">Obituary for Reverend K. N. Long</div>
+          <div class="text-xs text-ink-soft">2 hours ago · <span class="font-medium text-ink">document</span> · Brady &amp; Dr. Candise Lin</div>
+        </div>
+      </a>
+      <a href="document.html" class="block bg-surface border border-[color:var(--border-soft)] rounded-lg overflow-hidden hover:border-gold transition">
+        <div class="scan-placeholder letter h-44"></div>
+        <div class="p-4">
+          <div class="font-serif-content text-base mb-1">Letter to Father, Spring 1924</div>
+          <div class="text-xs text-ink-soft">Yesterday · <span class="font-medium text-ink">letter</span></div>
+        </div>
+      </a>
+      <a href="document.html" class="block bg-surface border border-[color:var(--border-soft)] rounded-lg overflow-hidden hover:border-gold transition">
+        <div class="scan-placeholder recordbook h-44"></div>
+        <div class="p-4">
+          <div class="font-serif-content text-base mb-1">Family record book, page 20</div>
+          <div class="text-xs text-ink-soft">3 days ago · <span class="font-medium text-ink">document</span></div>
+        </div>
+      </a>
+    </div>
+
+    <!-- NEEDS ATTENTION -->
+    <div class="grid grid-cols-2 gap-6">
+      <section class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-serif-content text-base">Needs translation</h3>
+          <span class="text-xs text-ink-soft">51 untranslated</span>
+        </div>
+        <ul class="text-sm divide-y divide-[color:var(--border-soft)]">
+          <li class="flex items-center justify-between py-2.5"><span>Letter to Mother, Winter 1924</span><span class="chip">letter</span></li>
+          <li class="flex items-center justify-between py-2.5"><span>Diary, January 1925</span><span class="chip">diary</span></li>
+          <li class="flex items-center justify-between py-2.5"><span>Postcard from Sacramento</span><span class="chip">document</span></li>
+          <li class="flex items-center justify-between py-2.5"><span>Photo with notation, 1926</span><span class="chip">photo</span></li>
+        </ul>
+      </section>
+      <section class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-serif-content text-base flex items-center gap-2">
+            <svg class="w-4 h-4 text-seal" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+            Pinned translations
+          </h3>
+          <span class="text-xs text-ink-soft">4 pinned</span>
+        </div>
+        <ul class="text-sm divide-y divide-[color:var(--border-soft)]">
+          <li class="py-2.5">
+            <a href="document.html" class="block hover:bg-paper-warm -mx-2 px-2 py-1 rounded">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="font-medium">Obituary for Reverend K. N. Long</span>
+                <span class="text-xs text-ink-faint">document</span>
+              </div>
+              <p class="text-xs text-ink-soft truncate">"Reverend Liang Guiyan, also known by the name Yipan, was a native of Shigang Village..."</p>
+            </a>
+          </li>
+          <li class="py-2.5">
+            <a href="document.html" class="block hover:bg-paper-warm -mx-2 px-2 py-1 rounded">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="font-medium">Family letter, Autumn 1923</span>
+                <span class="text-xs text-ink-faint">letter</span>
+              </div>
+              <p class="text-xs text-ink-soft truncate">"My dear father, I have arrived safely at the hotel in Sacramento..."</p>
+            </a>
+          </li>
+          <li class="py-2.5">
+            <a href="document.html" class="block hover:bg-paper-warm -mx-2 px-2 py-1 rounded">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="font-medium">Letter mentioning Mr. Wang, May 1924</span>
+                <span class="text-xs text-ink-faint">letter</span>
+              </div>
+              <p class="text-xs text-ink-soft truncate font-cjk">王君前日來訪，言其將返鄉省親，遂托其攜帶銀錢與信件...</p>
+            </a>
+          </li>
+          <li class="py-2.5">
+            <a href="document.html" class="block hover:bg-paper-warm -mx-2 px-2 py-1 rounded">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="font-medium">Diary, Thinking of father, June 1925</span>
+                <span class="text-xs text-ink-faint">diary</span>
+              </div>
+              <p class="text-xs text-ink-soft truncate font-cjk">六月十二日 晴。今日見鄰居老者，恍若父親面容...</p>
+            </a>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+  <p class="mt-12 text-xs text-ink-faint">Mockup · Phase 0 · placeholder data</p>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Documents (table) · Jang Heritage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          paper: '#FAF6EF', 'paper-warm': '#F5EFE0', surface: '#FFFFFF',
+          ink: '#2A1F1A', 'ink-soft': '#6B5D52', 'ink-faint': '#9C8E81',
+          seal: '#8B2D29', 'seal-soft': '#B25652',
+          gold: '#A8843E', 'gold-soft': '#C9A865',
+          'border-soft': '#E5DCC8', 'border-strong': '#C8B998'
+        }
+      }}
+    }
+  </script>
+  <link rel="stylesheet" href="_shared.css">
+</head>
+<body class="font-sans">
+
+<!-- TOP BAR -->
+<header class="border-b border-[color:var(--border-soft)] bg-paper sticky top-0 z-20">
+  <div class="flex items-center gap-6 px-6 h-16">
+    <a href="home.html" class="flex items-center gap-2.5 shrink-0">
+      <span class="font-cjk text-3xl text-seal leading-none">陳</span>
+      <span class="font-serif-content text-lg tracking-tight">Jang Heritage</span>
+    </a>
+    <div class="flex-1 max-w-xl">
+      <div class="relative">
+        <input type="text" placeholder="Search 中文 or English…"
+          class="w-full bg-surface border border-[color:var(--border-soft)] rounded-md pl-10 pr-16 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z"/></svg>
+        <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-ink-soft border border-[color:var(--border-soft)] rounded px-1.5 py-0.5 bg-paper-warm">⌘K</kbd>
+      </div>
+    </div>
+    <a href="edit-new.html" class="bg-seal text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-seal/90">+ New</a>
+    <div class="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium">B</div>
+  </div>
+  <!-- Horizontal nav, sits under the main header on every page -->
+  <nav class="border-t border-[color:var(--border-soft)]">
+    <div class="flex items-center gap-4 px-6 py-2 text-sm">
+      <a href="home.html" class="text-ink-soft hover:text-ink">Home</a>
+      <a href="list.html" class="text-seal font-medium">Documents</a>
+      <a href="#" class="text-ink-soft hover:text-ink">Tags</a>
+      <a href="#" class="text-ink-soft hover:text-ink">History</a>
+      <a href="#" class="ml-auto text-ink-soft hover:text-ink inline-flex items-center" title="Settings" aria-label="Settings">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94 0 .31.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<div class="flex">
+  <!-- FILTER SIDEBAR -->
+  <aside class="w-72 border-r border-[color:var(--border-soft)] bg-paper p-6 sticky top-16 self-start min-h-[calc(100vh-4rem)] overflow-auto">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-serif-content text-lg">Filters</h2>
+      <button class="text-xs text-seal hover:underline">Clear</button>
+    </div>
+
+    <div class="space-y-6 text-sm">
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Type</div>
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-2"><input type="checkbox" checked> Letter <span class="text-ink-faint ml-auto text-xs">63</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> Diary <span class="text-ink-faint ml-auto text-xs">42</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> Photo <span class="text-ink-faint ml-auto text-xs">21</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> Article <span class="text-ink-faint ml-auto text-xs">9</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> Document <span class="text-ink-faint ml-auto text-xs">12</span></label>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Date range</div>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="number" placeholder="From" value="1922" class="bg-surface border border-[color:var(--border-soft)] rounded px-2 py-1.5">
+          <input type="number" placeholder="To" value="1928" class="bg-surface border border-[color:var(--border-soft)] rounded px-2 py-1.5">
+        </div>
+      </div>
+
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Tags</div>
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-2"><input type="checkbox" checked> family <span class="text-ink-faint ml-auto text-xs">87</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> father <span class="text-ink-faint ml-auto text-xs">34</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> mother <span class="text-ink-faint ml-auto text-xs">28</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> san-francisco <span class="text-ink-faint ml-auto text-xs">42</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> remittance <span class="text-ink-faint ml-auto text-xs">19</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> laundry-work <span class="text-ink-faint ml-auto text-xs">15</span></label>
+        </div>
+        <button class="mt-2 text-xs text-seal hover:underline">+ 32 more</button>
+      </div>
+
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Translator</div>
+        <select class="w-full bg-surface border border-[color:var(--border-soft)] rounded px-2 py-1.5">
+          <option>Anyone</option>
+          <option>Brady</option>
+          <option>(Co-translator)</option>
+          <option>Untranslated</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-2">Has translation?</div>
+        <div class="flex gap-1">
+          <button class="pill-btn flex-1">Any</button>
+          <button class="pill-btn flex-1 bg-seal/10 text-seal border-seal/30">Yes</button>
+          <button class="pill-btn flex-1">No</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 p-8">
+    <!-- HEADER -->
+    <div class="flex items-end justify-between mb-6">
+      <div>
+        <h1 class="font-serif-content text-2xl mb-1">Documents</h1>
+        <p class="text-sm text-ink-soft">712 entries</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <select class="bg-surface border border-[color:var(--border-soft)] rounded px-3 py-1.5 text-sm">
+          <option>Recently edited</option>
+          <option>Date (oldest first)</option>
+          <option>Date (newest first)</option>
+          <option>Title (A→Z)</option>
+        </select>
+        <select class="bg-surface border border-[color:var(--border-soft)] rounded px-3 py-1.5 text-sm">
+          <option>24 per page</option>
+          <option selected>48 per page</option>
+          <option>96 per page</option>
+        </select>
+        <div class="flex border border-[color:var(--border-soft)] rounded-md overflow-hidden">
+          <a href="list.html" class="px-3 py-1.5 text-ink-soft hover:bg-paper-warm text-sm">Grid</a>
+          <a href="list-table.html" class="px-3 py-1.5 bg-seal/10 text-seal text-sm">Table</a>
+        </div>
+      </div>
+    </div>
+
+        <!-- TABLE view -->
+    <div class="bg-surface border border-[color:var(--border-soft)] rounded-lg overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-paper-warm border-b border-[color:var(--border-soft)] text-ink-soft">
+          <tr class="text-left">
+            <th class="px-3 py-2.5 w-14"></th>
+            <th class="px-3 py-2.5 font-medium">Title</th>
+            <th class="px-3 py-2.5 font-medium w-24">Type</th>
+            <th class="px-3 py-2.5 font-medium w-32">Date</th>
+            <th class="px-3 py-2.5 font-medium w-64">Tags</th>
+            <th class="px-3 py-2.5 font-medium w-40">Translator</th>
+            <th class="px-3 py-2.5 font-medium w-28">Updated</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[color:var(--border-soft)]">
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Obituary for Reverend K. N. Long</td>
+        <td class="px-3 py-2 text-ink-soft">document</td>
+        <td class="px-3 py-2 text-ink-soft">Jun 1949</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">obituary</span> <span class="chip">los-angeles</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Dr. Candise Lin</td>
+        <td class="px-3 py-2 text-ink-soft">2h ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Letter to Father, Spring 1924</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">20 Mar 1924</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">family</span> <span class="chip">father</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">yesterday</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Letter to Mother, Winter 1924 <span class="text-[10px] uppercase tracking-wider text-ink-faint italic">untranslated</span></td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">14 Dec 1924</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">family</span> <span class="chip">mother</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">(unassigned)</td>
+        <td class="px-3 py-2 text-ink-soft">3d ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Letter to brother, May 1925</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">22 May 1925</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">family</span> <span class="chip">brother</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">5d ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Family letter, Autumn 1923</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">11 Oct 1923</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">family</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">1w ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder recordbook w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Family record book, page 20</td>
+        <td class="px-3 py-2 text-ink-soft">document</td>
+        <td class="px-3 py-2 text-ink-soft">~1930s</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">records</span> <span class="chip">jang-family</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Margaret L.W.</td>
+        <td class="px-3 py-2 text-ink-soft">1w ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Letter mentioning Mr. Wang</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">18 May 1924</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">family</span> <span class="chip">remittance</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">2w ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Letter, School news, 1925 <span class="text-[10px] uppercase tracking-wider text-ink-faint italic">untranslated</span></td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">7 Jul 1925</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">family</span> <span class="chip">siblings</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">(unassigned)</td>
+        <td class="px-3 py-2 text-ink-soft">2w ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">New Year letter, 1926</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">14 Feb 1926</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">family</span> <span class="chip">new-year</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">3w ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Remittance receipt, Aug 1924</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">9 Aug 1924</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">remittance</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">3w ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Letter to Father, Autumn 1925</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">3 Oct 1925</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">family</span> <span class="chip">father</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">1mo ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder recordbook w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Photo with notation, 1926</td>
+        <td class="px-3 py-2 text-ink-soft">photo</td>
+        <td class="px-3 py-2 text-ink-soft">1926</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">photo</span> <span class="chip">family</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Margaret L.W.</td>
+        <td class="px-3 py-2 text-ink-soft">1mo ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Ed Wong, Fort Bliss, 1951</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">1951</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">wong</span> <span class="chip">military</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">1mo ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">The Wong Canton Letter <span class="text-[10px] uppercase tracking-wider text-ink-faint italic">untranslated</span></td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">?</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">wong</span> <span class="chip">canton</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">(unassigned)</td>
+        <td class="px-3 py-2 text-ink-soft">1mo ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">The Wavy Letter, 1941</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">1941</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">wartime</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">2mo ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">The Sister Telegram</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">1941</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">telegram</span> <span class="chip">family</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Dr. Candise Lin</td>
+        <td class="px-3 py-2 text-ink-soft">2mo ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">No Address Letter <span class="text-[10px] uppercase tracking-wider text-ink-faint italic">untranslated</span></td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">?</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">loose</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">(unassigned)</td>
+        <td class="px-3 py-2 text-ink-soft">2mo ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Manila Letters</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">1947-49</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">manila</span> <span class="chip">series</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">3mo ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Loose Letter Series: Calligraphy</td>
+        <td class="px-3 py-2 text-ink-soft">letter</td>
+        <td class="px-3 py-2 text-ink-soft">?</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">loose</span> <span class="chip">calligraphy</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">3mo ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
+        <td class="px-3 py-2"><div class="scan-placeholder w-10 h-12 rounded"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Diary, October 1925</td>
+        <td class="px-3 py-2 text-ink-soft">diary</td>
+        <td class="px-3 py-2 text-ink-soft">Oct 1925</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">diary</span> <span class="chip">family</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady Frey</td>
+        <td class="px-3 py-2 text-ink-soft">4mo ago</td>
+      </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="flex items-center justify-between mt-10 text-sm text-ink-soft">
+      <div>Showing 1-20 of 712</div>
+      <div class="flex items-center gap-1">
+        <button class="pill-btn">‹</button>
+        <button class="pill-btn bg-seal/10 text-seal border-seal/30">1</button>
+        <button class="pill-btn">2</button>
+        <button class="pill-btn">3</button>
+        <span class="px-1">…</span>
+        <button class="pill-btn">7</button>
+        <button class="pill-btn">›</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
