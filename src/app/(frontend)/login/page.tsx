@@ -48,7 +48,7 @@ export default async function LoginPage({
         </div>
 
         <p className="mt-6 text-xs text-ink-faint text-center">
-          Authorized translators only. Contact Brady if you need access.
+          Authorized users only. Contact Brady if you need access.
         </p>
       </div>
     </div>
