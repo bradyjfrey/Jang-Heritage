@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { checkIfUnmodifiedSince } from '../hooks/checkIfUnmodifiedSince'
 import { segmentChinese } from '../hooks/segmentChinese'
 import { updateTranscriptionSearchVector } from '../hooks/updateSearchVector'
 
@@ -13,6 +14,7 @@ export const Transcriptions: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
+      checkIfUnmodifiedSince,
       ({ data }) => {
         // Re-segment on every save so textSegmented stays in sync with text.
         // Keeps Postgres tsvector indexing consistent.

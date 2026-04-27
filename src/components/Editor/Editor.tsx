@@ -14,7 +14,7 @@ type Props = {
   user: User | null
 }
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'conflict'
 
 // Side-by-side editor matching mockups/edit.html. Autosave on a 3s debounce
 // per field, plus immediate save on blur. Conflict detection lands as a
@@ -33,6 +33,17 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
   )
   const [translationId, setTranslationId] = useState<number | null>(
     translation?.id ?? null,
+  )
+
+  // Per-row updatedAt for optimistic concurrency. We send these as
+  // If-Unmodified-Since on each PATCH; the server's beforeChange hook
+  // (checkIfUnmodifiedSince) returns 409 if the row has moved on.
+  const [docUpdatedAt, setDocUpdatedAt] = useState<string>(doc.updatedAt)
+  const [transcriptionUpdatedAt, setTranscriptionUpdatedAt] = useState<string | null>(
+    transcription?.updatedAt ?? null,
+  )
+  const [translationUpdatedAt, setTranslationUpdatedAt] = useState<string | null>(
+    translation?.updatedAt ?? null,
   )
 
   // Save state
@@ -78,45 +89,68 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
       setSavedAt(Date.now())
       setSaveStatus('saved')
     } catch (err) {
-      console.error('Save failed', err)
-      setSaveStatus('error')
+      if (err instanceof Error && err.message === 'CONFLICT') {
+        setSaveStatus('conflict')
+      } else {
+        console.error('Save failed', err)
+        setSaveStatus('error')
+      }
     }
   }
 
+  function jsonHeaders(ifUnmodifiedSince?: string | null): HeadersInit {
+    const h: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (ifUnmodifiedSince) h['If-Unmodified-Since'] = ifUnmodifiedSince
+    return h
+  }
+
+  async function patch(url: string, body: object, ifUnmodifiedSince: string | null) {
+    const res = await fetch(url, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: jsonHeaders(ifUnmodifiedSince),
+      body: JSON.stringify(body),
+    })
+    if (res.status === 409) throw new Error('CONFLICT')
+    if (!res.ok) throw new Error(`PATCH ${url} failed: ${res.status}`)
+    return res.json()
+  }
+
+  async function post(url: string, body: object) {
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: jsonHeaders(),
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) throw new Error(`POST ${url} failed: ${res.status}`)
+    return res.json()
+  }
+
   async function saveTitle(value: string) {
-    if (value === doc.title) return
+    if (value === doc.title && docUpdatedAt === doc.updatedAt) return
     await withSaveStatus(async () => {
-      const res = await fetch(`/api/documents/${doc.id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: value }),
-      })
-      if (!res.ok) throw new Error(`Title save failed: ${res.status}`)
+      const json = await patch(`/api/documents/${doc.id}`, { title: value }, docUpdatedAt)
+      const updated = json?.doc ?? json
+      if (updated?.updatedAt) setDocUpdatedAt(updated.updatedAt)
     })
   }
 
   async function saveTranscription(value: string) {
     await withSaveStatus(async () => {
       if (transcriptionId == null) {
-        const res = await fetch('/api/transcriptions', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ document: doc.id, text: value }),
-        })
-        if (!res.ok) throw new Error(`Transcription create failed: ${res.status}`)
-        const json = await res.json()
+        const json = await post('/api/transcriptions', { document: doc.id, text: value })
         const created = json?.doc ?? json
         if (created?.id != null) setTranscriptionId(created.id)
+        if (created?.updatedAt) setTranscriptionUpdatedAt(created.updatedAt)
       } else {
-        const res = await fetch(`/api/transcriptions/${transcriptionId}`, {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: value }),
-        })
-        if (!res.ok) throw new Error(`Transcription save failed: ${res.status}`)
+        const json = await patch(
+          `/api/transcriptions/${transcriptionId}`,
+          { text: value },
+          transcriptionUpdatedAt,
+        )
+        const updated = json?.doc ?? json
+        if (updated?.updatedAt) setTranscriptionUpdatedAt(updated.updatedAt)
       }
     })
   }
@@ -124,24 +158,18 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
   async function saveTranslation(value: string) {
     await withSaveStatus(async () => {
       if (translationId == null) {
-        const res = await fetch('/api/translations', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ document: doc.id, text: value }),
-        })
-        if (!res.ok) throw new Error(`Translation create failed: ${res.status}`)
-        const json = await res.json()
+        const json = await post('/api/translations', { document: doc.id, text: value })
         const created = json?.doc ?? json
         if (created?.id != null) setTranslationId(created.id)
+        if (created?.updatedAt) setTranslationUpdatedAt(created.updatedAt)
       } else {
-        const res = await fetch(`/api/translations/${translationId}`, {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: value }),
-        })
-        if (!res.ok) throw new Error(`Translation save failed: ${res.status}`)
+        const json = await patch(
+          `/api/translations/${translationId}`,
+          { text: value },
+          translationUpdatedAt,
+        )
+        const updated = json?.doc ?? json
+        if (updated?.updatedAt) setTranslationUpdatedAt(updated.updatedAt)
       }
     })
   }
@@ -183,11 +211,13 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
 
   function statusLabel(): { text: string; cls: string } {
     if (saveStatus === 'saving') return { text: 'Saving…', cls: 'save-status saving' }
+    if (saveStatus === 'conflict') return { text: 'Conflict, refresh', cls: 'save-status' }
     if (saveStatus === 'error') return { text: 'Save failed', cls: 'save-status' }
     if (saveStatus === 'saved') return { text: savedAgoLabel || 'Saved', cls: 'save-status' }
     return { text: 'Up to date', cls: 'save-status' }
   }
   const status = statusLabel()
+  const isAlertStatus = saveStatus === 'error' || saveStatus === 'conflict'
 
   return (
     <div className={styles.editShell}>
@@ -211,7 +241,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
         <span
           className={status.cls}
           style={
-            saveStatus === 'error'
+            isAlertStatus
               ? { color: 'var(--seal)' }
               : saveStatus === 'idle'
                 ? { opacity: 0.55 }
@@ -221,7 +251,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
           <span
             className="dot"
             style={
-              saveStatus === 'error'
+              isAlertStatus
                 ? { background: 'var(--seal)' }
                 : saveStatus === 'idle'
                   ? { background: 'var(--ink-faint)' }

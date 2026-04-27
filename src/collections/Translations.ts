@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { checkIfUnmodifiedSince } from '../hooks/checkIfUnmodifiedSince'
 import { updateTranslationSearchVector } from '../hooks/updateSearchVector'
 
 export const Translations: CollectionConfig = {
@@ -11,6 +12,7 @@ export const Translations: CollectionConfig = {
     maxPerDoc: 50,
   },
   hooks: {
+    beforeChange: [checkIfUnmodifiedSince],
     afterChange: [updateTranslationSearchVector],
   },
   fields: [
