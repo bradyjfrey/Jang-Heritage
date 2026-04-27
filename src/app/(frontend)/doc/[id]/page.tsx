@@ -142,7 +142,7 @@ export default async function DocumentPage({
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-serif-content text-xl font-cjk">中文录入</h2>
                 <CopyButton
-                  getText={() => transcription.text || ''}
+                  text={transcription.text || ''}
                   label="Copy Chinese transcription"
                 />
               </div>
@@ -157,7 +157,7 @@ export default async function DocumentPage({
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-serif-content text-xl">English Translation</h2>
                 <CopyButton
-                  getText={() => translation.text || ''}
+                  text={translation.text || ''}
                   label="Copy English translation"
                 />
               </div>

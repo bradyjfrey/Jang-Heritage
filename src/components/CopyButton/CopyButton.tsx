@@ -4,17 +4,20 @@ import { useState } from 'react'
 
 // Two-square icon clipboard button matching the mockup. Solid back square
 // in seal red, outlined front square filled with the surrounding paper.
+//
+// Takes a plain string rather than a getter so it can be rendered from
+// server components without the function-across-boundary error.
 type Props = {
-  getText: () => string
+  text: string
   label: string
 }
 
-export function CopyButton({ getText, label }: Props) {
+export function CopyButton({ text, label }: Props) {
   const [copied, setCopied] = useState(false)
 
   async function onClick() {
     try {
-      await navigator.clipboard.writeText(getText())
+      await navigator.clipboard.writeText(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 1200)
     } catch {
