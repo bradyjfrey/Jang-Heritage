@@ -18,11 +18,11 @@ export default async function EditPage({
   const headers = await getHeaders()
   const { user } = await payload.auth({ headers })
 
-  // Auth gate: anonymous visitors get punted to Payload's login page,
-  // with a redirect back here so the editor opens after sign-in.
+  // Auth gate: anonymous visitors land on the themed login page, which
+  // bounces them back here after sign-in.
   if (!user) {
     const next = encodeURIComponent(`/doc/${docId}/edit`)
-    redirect(`/admin/login?redirect=${next}`)
+    redirect(`/login?redirect=${next}`)
   }
 
   const doc = await payload
