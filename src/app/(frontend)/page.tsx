@@ -123,7 +123,7 @@ export default async function HomePage() {
               <span className="text-lg leading-none">+</span> New note
             </Link>
             <Link
-              href="/admin/collections/documents/create"
+              href="/add"
               className="bg-seal text-white px-5 py-2.5 rounded-md font-medium hover:bg-black inline-flex items-center gap-2 transition-colors"
             >
               <span className="text-lg leading-none">+</span> New entry
