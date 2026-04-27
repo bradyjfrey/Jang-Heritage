@@ -64,6 +64,57 @@ mark.snippet {
   border-radius: 2px;
 }
 
+/* Rendered markdown for note bodies (react-markdown output). Mirrors the
+   .md-body block in mockups/document-note.html. */
+.md-body { color: var(--ink); line-height: 1.65; font-size: 1rem; }
+.md-body > *:first-child { margin-top: 0; }
+.md-body > *:last-child { margin-bottom: 0; }
+.md-body h1 { font-family: "Source Serif 4", "Lora", Georgia, serif; font-size: 1.75rem; margin: 1.25rem 0 0.75rem; }
+.md-body h2 { font-family: "Source Serif 4", "Lora", Georgia, serif; font-size: 1.4rem; margin: 1.5rem 0 0.65rem; }
+.md-body h3 { font-family: "Source Serif 4", "Lora", Georgia, serif; font-size: 1.15rem; margin: 1.25rem 0 0.5rem; color: var(--ink); }
+.md-body p { margin: 0.65rem 0; }
+.md-body ul { margin: 0.5rem 0 0.75rem 1.25rem; list-style: disc; }
+.md-body ol { margin: 0.5rem 0 0.75rem 1.5rem; list-style: decimal; }
+.md-body li { margin: 0.25rem 0; }
+.md-body strong { font-weight: 600; color: var(--ink); }
+.md-body em { font-style: italic; }
+.md-body del { text-decoration: line-through; color: var(--ink-soft); }
+.md-body a { color: var(--seal); text-decoration: underline; text-underline-offset: 2px; }
+.md-body a:hover { color: black; }
+.md-body code:not(pre code) {
+  background: var(--paper-warm);
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+.md-body pre {
+  background: var(--paper-warm);
+  border: 1px solid var(--border-soft);
+  padding: 0.65rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+.md-body blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: 1rem;
+  color: var(--ink-soft);
+  margin: 0.75rem 0;
+}
+.md-body hr {
+  border: 0; border-top: 1px solid var(--border-soft); margin: 1.5rem 0;
+}
+.md-body table {
+  border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem;
+}
+.md-body th, .md-body td {
+  border: 1px solid var(--border-soft);
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+}
+.md-body th { background: var(--paper-warm); font-weight: 600; }
+
 /* Save status pill (used in the editor header) */
 .save-status {
   font-size: 0.75rem;

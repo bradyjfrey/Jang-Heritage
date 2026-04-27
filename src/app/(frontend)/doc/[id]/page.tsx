@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
 import { CopyButton } from '@/components/CopyButton/CopyButton'
+import { NoteBody } from '@/components/NoteBody/NoteBody'
 import type { Media, Tag } from '@/payload-types'
 
 function formatDate(
@@ -81,6 +82,7 @@ export default async function DocumentPage({
   )
 
   const dateLabel = formatDate(doc.dateOriginal, doc.dateOriginalPrecision)
+  const isNote = doc.documentType === 'note'
 
   return (
     <>
@@ -105,7 +107,25 @@ export default async function DocumentPage({
             ) : null}
           </div>
 
-          {scans.length > 0 ? (
+          {isNote ? (
+            doc.body ? (
+              <section className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-serif-content text-xl">Note:</h2>
+                  <CopyButton text={doc.body} label="Copy note body" />
+                </div>
+                <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-8">
+                  <NoteBody source={doc.body} />
+                </div>
+              </section>
+            ) : (
+              <div className="text-ink-faint text-sm py-8">
+                This note is empty.
+              </div>
+            )
+          ) : null}
+
+          {!isNote && scans.length > 0 ? (
             <section className="mb-10">
               <div className="rounded-lg border border-[color:var(--border-soft)] mb-3 bg-paper-warm flex justify-center p-4">
                 <img
@@ -137,7 +157,7 @@ export default async function DocumentPage({
             </section>
           ) : null}
 
-          {transcription?.text ? (
+          {!isNote && transcription?.text ? (
             <section className="mb-8">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-serif-content text-xl font-cjk">中文录入</h2>
@@ -152,7 +172,7 @@ export default async function DocumentPage({
             </section>
           ) : null}
 
-          {translation?.text ? (
+          {!isNote && translation?.text ? (
             <section className="mb-8">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-serif-content text-xl">English Translation</h2>
@@ -173,7 +193,7 @@ export default async function DocumentPage({
             href={`/doc/${doc.id}/edit`}
             className="block w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors"
           >
-            Edit transcription &amp; translation
+            {isNote ? 'Edit note' : 'Edit transcription & translation'}
           </Link>
 
           <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
@@ -191,7 +211,7 @@ export default async function DocumentPage({
                   <div>{dateLabel}</div>
                 </div>
               ) : null}
-              {scans.length > 0 ? (
+              {!isNote && scans.length > 0 ? (
                 <div className="flex justify-between gap-4 pt-1 text-ink-soft">
                   <span>Scans</span>
                   <span>
