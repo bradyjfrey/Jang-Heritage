@@ -1,0 +1,106 @@
+/* Viewport-locked editor: 56px header + main fills the rest of 100vh.
+   The shell pins itself (no body-level overflow:hidden needed). */
+.editShell {
+  display: grid;
+  grid-template-rows: 56px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+.editMain {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Each pane (image / 中文 / English) has its own header + body grid. */
+.pane {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
+  overflow: hidden;
+}
+.paneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--paper-warm);
+  font-size: 0.8125rem;
+}
+.paneBody {
+  padding: 1.5rem;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Image pane: full-width image inside a vertically-scrolling area.
+   No object-fit:contain — the scan fills the column width naturally. */
+.imagePane > .scrollArea {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.scan {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.editor {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: 0;
+  background: transparent;
+  outline: none;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.editor:focus {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.sizeBtn {
+  min-width: 1.6rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1;
+}
+.sizeBtn:hover {
+  background: var(--paper-warm);
+  color: var(--ink);
+}
+.sizeBtnDec { font-size: 0.7rem; }
+.sizeBtnInc { font-size: 0.95rem; }
+
+/* Wide (>=1280px): three columns image | 中文 | English. */
+@media (min-width: 1280px) {
+  .editMain {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border-soft);
+  }
+  .pane {
+    background: var(--paper);
+  }
+}
+
+/* Narrow (<1280px): three stacked rows at 20% / 40% / 40%. */
+@media (max-width: 1279.98px) {
+  .editMain {
+    display: grid;
+    grid-template-rows: 20% 40% 40%;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: var(--border-soft);
+  }
+  .pane {
+    background: var(--paper);
+  }
+}
