@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>New note · Jang Heritage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          paper: '#FAF6EF', 'paper-warm': '#F5EFE0', surface: '#FFFFFF',
+          ink: '#2A1F1A', 'ink-soft': '#6B5D52', 'ink-faint': '#9C8E81',
+          seal: '#8B2D29', 'seal-soft': '#B25652',
+          gold: '#A8843E', 'gold-soft': '#C9A865',
+          'border-soft': '#E5DCC8', 'border-strong': '#C8B998'
+        }
+      }}
+    }
+  </script>
+  <link rel="stylesheet" href="_shared.css">
+  <style>
+    body { overflow: hidden; height: 100vh; }
+    .edit-shell { display: grid; grid-template-rows: 56px 1fr; height: 100vh; }
+    .edit-main { overflow: hidden; min-height: 0; }
+
+    .pane { display: grid; grid-template-rows: auto 1fr; min-height: 0; overflow: hidden; background: var(--paper); }
+    .pane-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.625rem 1rem; border-bottom: 1px solid var(--border-soft);
+      background: var(--paper-warm); font-size: 0.8125rem;
+    }
+    .pane-body { min-height: 0; overflow: auto; }
+
+    .note-measure {
+      max-width: 75ch;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    textarea.editor {
+      width: 100%;
+      flex: 1;
+      resize: none; border: 0; background: transparent; outline: none;
+      font-size: 1rem; line-height: 1.55; color: var(--ink);
+      font-family: "Source Serif 4", "Lora", "PingFang SC", "Noto Sans CJK SC",
+        "Source Han Sans SC", Georgia, serif;
+    }
+    textarea.editor:focus { background: rgba(255,255,255,0.55); }
+    textarea.editor::placeholder { color: var(--ink-faint); font-style: italic; }
+
+    .size-btn {
+      min-width: 1.6rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border-soft);
+      background: var(--surface);
+      color: var(--ink-soft);
+      cursor: pointer; font-weight: 600; line-height: 1;
+    }
+    .size-btn:hover { background: var(--paper-warm); color: var(--ink); }
+    .size-btn[data-action="dec"] { font-size: 0.7rem; }
+    .size-btn[data-action="inc"] { font-size: 0.95rem; }
+
+    .md-hint {
+      font-size: 0.7rem;
+      color: var(--ink-faint);
+      padding: 0.4rem 1rem;
+      background: var(--paper);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .md-hint code {
+      background: var(--paper-warm);
+      padding: 0 0.3rem;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      color: var(--ink-soft);
+    }
+  </style>
+</head>
+<body class="font-sans">
+
+<div class="edit-shell">
+
+  <!-- COMPACT HEADER -->
+  <header class="border-b border-[color:var(--border-soft)] bg-paper flex items-center px-4 gap-4">
+    <a href="home.html" class="text-ink-soft hover:text-ink text-sm flex items-center gap-1">
+      <span>←</span> Back
+    </a>
+    <div class="h-6 w-px bg-[color:var(--border-soft)]"></div>
+    <div class="flex-1 min-w-0">
+      <input type="text" value="" placeholder="Untitled note. Add a title or come back to it later."
+        class="w-full max-w-xl bg-transparent border-0 font-serif-content text-lg focus:outline-none focus:bg-white focus:rounded focus:px-2 focus:py-0.5" autofocus>
+    </div>
+    <span class="text-xs text-ink-faint uppercase tracking-wider">Note</span>
+    <div class="h-6 w-px bg-[color:var(--border-soft)]"></div>
+    <span class="save-status" style="opacity:0.5"><span class="dot" style="background:#9C8E81"></span>Not yet saved</span>
+    <div class="h-6 w-px bg-[color:var(--border-soft)]"></div>
+    <div class="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium">B</div>
+  </header>
+
+  <!-- SINGLE PANE -->
+  <div class="edit-main">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="flex items-center gap-2">
+          <span class="text-base">Body</span>
+          <span class="text-ink-faint">·</span>
+          <span class="text-ink-soft">Mixed language, markdown supported</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5" title="Adjust text size">
+            <button class="size-btn" data-action="dec" aria-label="Decrease text size">A</button>
+            <button class="size-btn" data-action="inc" aria-label="Increase text size">A</button>
+          </div>
+          <span class="text-ink-faint text-xs">0 words</span>
+        </div>
+      </div>
+
+      <div class="md-hint">
+        <span>Markdown: <code># heading</code> <code>**bold**</code> <code>- list</code> <code>[link](url)</code></span>
+        <span class="text-ink-faint">Renders on the document page</span>
+      </div>
+
+      <div class="pane-body scroll-area">
+        <div class="note-measure">
+          <textarea class="editor" spellcheck="true" placeholder="Start typing… Notes are for research leads, contacts, transcribed inscriptions, anything that doesn't have a scan attached. You can add tags and a date later, on the document page."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.size-btn');
+    if (!btn) return;
+    const pane = btn.closest('.pane');
+    const ta = pane && pane.querySelector('textarea.editor');
+    if (!ta) return;
+    const current = parseFloat(getComputedStyle(ta).fontSize) || 16;
+    const next = btn.dataset.action === 'inc'
+      ? Math.min(current + 2, 32)
+      : Math.max(current - 2, 12);
+    ta.style.fontSize = next + 'px';
+  });
+</script>
+
+</body>
+</html>

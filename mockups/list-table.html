@@ -32,9 +32,8 @@
     <div class="flex-1 max-w-xl">
       <div class="relative">
         <input type="text" placeholder="Search 中文 or English…"
-          class="w-full bg-surface border border-[color:var(--border-soft)] rounded-md pl-10 pr-16 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold">
+          class="w-full bg-surface border border-[color:var(--border-soft)] rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z"/></svg>
-        <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-ink-soft border border-[color:var(--border-soft)] rounded px-1.5 py-0.5 bg-paper-warm">⌘K</kbd>
       </div>
     </div>
     <a href="edit-new.html" class="bg-seal text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-seal/90">+ New</a>
@@ -71,6 +70,7 @@
           <label class="flex items-center gap-2"><input type="checkbox"> Photo <span class="text-ink-faint ml-auto text-xs">21</span></label>
           <label class="flex items-center gap-2"><input type="checkbox"> Article <span class="text-ink-faint ml-auto text-xs">9</span></label>
           <label class="flex items-center gap-2"><input type="checkbox"> Document <span class="text-ink-faint ml-auto text-xs">12</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox"> Note <span class="text-ink-faint ml-auto text-xs">7</span></label>
         </div>
       </div>
 
@@ -166,6 +166,24 @@
         <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">obituary</span> <span class="chip">los-angeles</span></div></td>
         <td class="px-3 py-2 text-ink-soft">Dr. Candise Lin</td>
         <td class="px-3 py-2 text-ink-soft">2h ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document-note.html'">
+        <td class="px-3 py-2"><div class="note-card-bg thumb w-10 h-12 rounded border border-[color:var(--border-soft)]"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Jinshan Shibao research lead, Ah Hung Chan article 1940</td>
+        <td class="px-3 py-2 text-ink-soft">note</td>
+        <td class="px-3 py-2 text-ink-soft">Apr 2026</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">research</span> <span class="chip">jinshan-shibao</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady J. Frey</td>
+        <td class="px-3 py-2 text-ink-soft">2h ago</td>
+      </tr>
+      <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document-note.html'">
+        <td class="px-3 py-2"><div class="note-card-bg thumb w-10 h-12 rounded border border-[color:var(--border-soft)]"></div></td>
+        <td class="px-3 py-2 font-serif-content text-base">Gravestone inscription, Ah Hung Chan</td>
+        <td class="px-3 py-2 text-ink-soft">note</td>
+        <td class="px-3 py-2 text-ink-soft">Apr 2026</td>
+        <td class="px-3 py-2"><div class="flex flex-wrap gap-1 items-center"><span class="chip">gravestone</span> <span class="chip">family</span></div></td>
+        <td class="px-3 py-2 text-ink-soft">Brady J. Frey</td>
+        <td class="px-3 py-2 text-ink-soft">3d ago</td>
       </tr>
       <tr class="hover:bg-paper-warm cursor-pointer" onclick="location.href='document.html'">
         <td class="px-3 py-2"><div class="scan-placeholder letter w-10 h-12 rounded"></div></td>

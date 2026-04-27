@@ -48,6 +48,50 @@ body { background: var(--paper); color: var(--ink); }
 }
 .scan-placeholder .scan-text { display: none; }
 
+/* Note card background, used for cards/results that have no scan attached.
+   Parchment swatch with a faint 陳 family character watermark. */
+.note-card-bg {
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(168,132,62,0.08) 0%, transparent 60%),
+    linear-gradient(135deg, var(--paper-warm) 0%, var(--paper) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.note-card-bg::before {
+  content: "陳";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  font-family: "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", serif;
+  font-size: 6rem;
+  color: var(--seal);
+  opacity: 0.08;
+  font-weight: 600;
+  pointer-events: none;
+}
+.note-card-bg::after {
+  content: "Note";
+  position: absolute;
+  bottom: 3.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+
+/* Tiny variant for table thumbnails: just the parchment + a centered, small 陳 char.
+   Drop the "Note" label. */
+.note-card-bg.thumb::before {
+  font-size: 1.5rem;
+  transform: translate(-50%, -50%);
+  opacity: 0.25;
+}
+.note-card-bg.thumb::after { display: none; }
+
 /* Tag chip */
 .chip {
   display: inline-flex;

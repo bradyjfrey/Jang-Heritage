@@ -32,9 +32,8 @@
     <div class="flex-1 max-w-xl">
       <div class="relative">
         <input type="text" placeholder="Search 中文 or English…"
-          class="w-full bg-surface border border-[color:var(--border-soft)] rounded-md pl-10 pr-16 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold">
+          class="w-full bg-surface border border-[color:var(--border-soft)] rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z"/></svg>
-        <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-ink-soft border border-[color:var(--border-soft)] rounded px-1.5 py-0.5 bg-paper-warm">⌘K</kbd>
       </div>
     </div>
     <div class="flex items-center gap-2 shrink-0">
@@ -62,9 +61,14 @@
         <h1 class="font-serif-content text-3xl mb-1">Welcome back, Brady</h1>
         <p class="text-ink-soft">Continue translating your grandfather-in-law's archive.</p>
       </div>
-      <a href="edit-new.html" class="bg-seal text-white px-5 py-2.5 rounded-md font-medium hover:bg-seal/90 inline-flex items-center gap-2">
-        <span class="text-lg leading-none">+</span> New entry
-      </a>
+      <div class="flex items-center gap-2">
+        <a href="add-note.html" class="bg-surface border border-seal/40 text-seal px-4 py-2.5 rounded-md font-medium hover:bg-seal hover:text-white hover:border-seal inline-flex items-center gap-2 transition-colors">
+          <span class="text-lg leading-none">+</span> New note
+        </a>
+        <a href="edit-new.html" class="bg-seal text-white px-5 py-2.5 rounded-md font-medium hover:bg-black inline-flex items-center gap-2 transition-colors">
+          <span class="text-lg leading-none">+</span> New entry
+        </a>
+      </div>
     </div>
 
     <!-- STATS STRIP -->
@@ -113,6 +117,13 @@
         <div class="p-4">
           <div class="font-serif-content text-base mb-1">Family record book, page 20</div>
           <div class="text-xs text-ink-soft">3 days ago · <span class="font-medium text-ink">document</span></div>
+        </div>
+      </a>
+      <a href="document-note.html" class="block bg-surface border border-[color:var(--border-soft)] rounded-lg overflow-hidden hover:border-gold transition">
+        <div class="note-card-bg h-44"></div>
+        <div class="p-4">
+          <div class="font-serif-content text-base mb-1">Jinshan Shibao research lead, Ah Hung Chan article 1940</div>
+          <div class="text-xs text-ink-soft">4 days ago · <span class="font-medium text-ink">note</span></div>
         </div>
       </a>
     </div>
