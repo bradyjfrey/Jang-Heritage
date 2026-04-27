@@ -15,6 +15,9 @@ out/
 build/
 next-env.d.ts
 
+# Payload uploads (dev only; production lives in R2 via @payloadcms/storage-s3)
+media/
+
 # TypeScript / build artefacts
 *.tsbuildinfo
 
