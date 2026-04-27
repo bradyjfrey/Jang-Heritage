@@ -150,18 +150,25 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
             </div>
           </div>
           <div
-            className={`${styles.scrollArea} scroll-area bg-paper-warm flex items-start justify-center p-4`}
-            style={{ overflow: zoom > 100 ? 'auto' : 'hidden auto' }}
+            className={`${styles.scrollArea} scroll-area bg-paper-warm`}
+            style={{ overflow: 'auto', padding: '1rem' }}
           >
             {currentScan?.url ? (
               <img
                 src={currentScan.url}
                 alt={currentScan.alt || `Scan ${scanIndex + 1} of ${scans.length}`}
-                className={`${styles.scan} rounded shadow-sm`}
-                style={{ width: `${zoom}%`, maxWidth: 'none' }}
+                className="rounded shadow-sm"
+                style={{
+                  display: 'block',
+                  width: `${zoom}%`,
+                  maxWidth: 'none',
+                  height: 'auto',
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+                }}
               />
             ) : (
-              <div className="text-ink-faint text-sm py-8">No scans attached</div>
+              <div className="text-ink-faint text-sm py-8 text-center">No scans attached</div>
             )}
           </div>
         </div>
