@@ -1,33 +1,41 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { Document, User } from '@/payload-types'
 
 import styles from './Editor.module.css'
-import { useAutosave } from './useAutosave'
 
 type Props = {
-  document: Document
+  // null means we're in "new note" mode at /add/note: no row yet, first
+  // save POSTs to create one. Established notes pass an existing Document.
+  document: Document | null
   user: User | null
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'conflict'
 
-// Single-pane editor for documentType='note'. Saves both the title and the
-// body to the same Documents row via PATCH; autosave rules and conflict
-// detection mirror the side-by-side editor.
+const DEBOUNCE_MS = 3000
+
+// Single-pane editor for documentType='note'. Handles two flows:
+//   - existing note: PATCH on save, with optimistic concurrency.
+//   - brand-new note (document === null): defers creation until the user
+//     actually types, then POSTs to /api/documents and silently rewrites
+//     the URL to /doc/<newId>/edit so refresh keeps the user on the note.
 export function NoteEditor({ document: doc, user }: Props) {
-  const [title, setTitle] = useState(doc.title)
-  const [body, setBody] = useState(doc.body || '')
-  const [docUpdatedAt, setDocUpdatedAt] = useState<string>(doc.updatedAt)
+  const router = useRouter()
+
+  const [title, setTitle] = useState(doc?.title || '')
+  const [body, setBody] = useState(doc?.body || '')
+  const [docId, setDocId] = useState<number | null>(doc?.id ?? null)
+  const [docUpdatedAt, setDocUpdatedAt] = useState<string | null>(
+    doc?.updatedAt ?? null,
+  )
 
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [savedAgoLabel, setSavedAgoLabel] = useState('')
-
-  const flushTitle = useRef<(() => void) | null>(null)
-  const flushBody = useRef<(() => void) | null>(null)
 
   const [bodySize, setBodySize] = useState(16)
 
@@ -38,48 +46,129 @@ export function NoteEditor({ document: doc, user }: Props) {
 
   const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0
 
-  async function patchDoc(payload: Partial<Document>) {
+  // Last persisted values, used to debounce away no-op saves and to detect
+  // the "user has typed something but doesn't have a row yet" case.
+  const lastSavedRef = useRef({
+    title: doc?.title || '',
+    body: doc?.body || '',
+  })
+  // Latest title/body — kept in a ref so the debounced save reads fresh
+  // values without re-binding the timer.
+  const valuesRef = useRef({ title, body })
+  valuesRef.current = { title, body }
+
+  // Mirror docId / docUpdatedAt into refs for the same reason.
+  const docIdRef = useRef<number | null>(docId)
+  docIdRef.current = docId
+  const docUpdatedAtRef = useRef<string | null>(docUpdatedAt)
+  docUpdatedAtRef.current = docUpdatedAt
+
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const flushRef = useRef<(() => void) | null>(null)
+  const inFlightRef = useRef(false)
+
+  async function performSave() {
+    if (inFlightRef.current) return
+    const { title: t, body: b } = valuesRef.current
+    if (
+      t === lastSavedRef.current.title &&
+      b === lastSavedRef.current.body
+    ) {
+      return
+    }
+    // Skip the first save if the user hasn't actually typed anything.
+    if (docIdRef.current == null && !t.trim() && !b.trim()) {
+      return
+    }
+
+    inFlightRef.current = true
     setSaveStatus('saving')
     try {
-      const res = await fetch(`/api/documents/${doc.id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-If-Unmodified-Since': docUpdatedAt,
-        },
-        body: JSON.stringify(payload),
-      })
-      if (res.status === 409) {
-        setSaveStatus('conflict')
-        return
+      if (docIdRef.current == null) {
+        // Create
+        const res = await fetch('/api/documents', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: t || 'Untitled note',
+            body: b,
+            documentType: 'note',
+          }),
+        })
+        if (!res.ok) {
+          setSaveStatus('error')
+          return
+        }
+        const json = await res.json()
+        const created = json?.doc ?? json
+        if (created?.id != null) {
+          setDocId(created.id)
+          docIdRef.current = created.id
+        }
+        if (created?.updatedAt) {
+          setDocUpdatedAt(created.updatedAt)
+          docUpdatedAtRef.current = created.updatedAt
+        }
+        if (created?.id != null) {
+          router.replace(`/doc/${created.id}/edit`, { scroll: false })
+        }
+      } else {
+        // Update
+        const res = await fetch(`/api/documents/${docIdRef.current}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-If-Unmodified-Since': docUpdatedAtRef.current || '',
+          },
+          body: JSON.stringify({ title: t, body: b }),
+        })
+        if (res.status === 409) {
+          setSaveStatus('conflict')
+          return
+        }
+        if (!res.ok) {
+          setSaveStatus('error')
+          return
+        }
+        const json = await res.json()
+        const updated = json?.doc ?? json
+        if (updated?.updatedAt) {
+          setDocUpdatedAt(updated.updatedAt)
+          docUpdatedAtRef.current = updated.updatedAt
+        }
       }
-      if (!res.ok) {
-        setSaveStatus('error')
-        return
-      }
-      const json = await res.json()
-      const updated = json?.doc ?? json
-      if (updated?.updatedAt) setDocUpdatedAt(updated.updatedAt)
+      lastSavedRef.current = { title: t, body: b }
       setSavedAt(Date.now())
       setSaveStatus('saved')
     } catch (err) {
       console.error('Save failed', err)
       setSaveStatus('error')
+    } finally {
+      inFlightRef.current = false
     }
   }
 
-  async function saveTitle(value: string) {
-    if (value === doc.title && docUpdatedAt === doc.updatedAt) return
-    await patchDoc({ title: value })
-  }
-
-  async function saveBody(value: string) {
-    await patchDoc({ body: value })
-  }
-
-  useAutosave({ value: title, onSave: saveTitle, flushRef: flushTitle })
-  useAutosave({ value: body, onSave: saveBody, flushRef: flushBody })
+  // Schedule a debounced save whenever title or body changes.
+  useEffect(() => {
+    if (
+      title === lastSavedRef.current.title &&
+      body === lastSavedRef.current.body
+    ) {
+      return
+    }
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(performSave, DEBOUNCE_MS)
+    flushRef.current = () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+      void performSave()
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, body])
 
   useEffect(() => {
     if (saveStatus !== 'saved' || savedAt == null) {
@@ -101,7 +190,7 @@ export function NoteEditor({ document: doc, user }: Props) {
 
   useEffect(() => {
     function handler(e: BeforeUnloadEvent) {
-      if (saveStatus === 'saving') {
+      if (saveStatus === 'saving' || inFlightRef.current) {
         e.preventDefault()
         e.returnValue = ''
       }
@@ -115,16 +204,17 @@ export function NoteEditor({ document: doc, user }: Props) {
     if (saveStatus === 'conflict') return { text: 'Conflict, refresh', cls: 'save-status' }
     if (saveStatus === 'error') return { text: 'Save failed', cls: 'save-status' }
     if (saveStatus === 'saved') return { text: savedAgoLabel || 'Saved', cls: 'save-status' }
-    return { text: 'Up to date', cls: 'save-status' }
+    return { text: docId == null ? 'New note' : 'Up to date', cls: 'save-status' }
   }
   const status = statusLabel()
   const isAlertStatus = saveStatus === 'error' || saveStatus === 'conflict'
+  const backHref = docId != null ? `/doc/${docId}` : '/'
 
   return (
     <div className={styles.editShell}>
       <header className="border-b border-[color:var(--border-soft)] bg-paper flex items-center px-4 gap-4">
         <Link
-          href={`/doc/${doc.id}`}
+          href={backHref}
           className="text-ink-soft hover:text-ink text-sm flex items-center gap-1"
         >
           <span>←</span> Back
@@ -135,7 +225,8 @@ export function NoteEditor({ document: doc, user }: Props) {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => flushTitle.current?.()}
+            onBlur={() => flushRef.current?.()}
+            placeholder="Untitled note. Add a title or come back to it later."
             className="w-full max-w-xl bg-transparent border-0 font-serif-content text-lg focus:outline-none focus:bg-white focus:rounded focus:px-2 focus:py-0.5"
           />
         </div>
@@ -212,9 +303,10 @@ export function NoteEditor({ document: doc, user }: Props) {
                 spellCheck={true}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                onBlur={() => flushBody.current?.()}
+                onBlur={() => flushRef.current?.()}
                 style={{ fontSize: `${bodySize}px` }}
                 placeholder="Start typing… Notes are for research leads, contacts, transcribed inscriptions, anything that doesn't have a scan attached."
+                autoFocus={docId == null}
               />
             </div>
           </div>
