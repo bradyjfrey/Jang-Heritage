@@ -7,7 +7,9 @@ import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
 import { CopyButton } from '@/components/CopyButton/CopyButton'
 import { NoteBody } from '@/components/NoteBody/NoteBody'
-import type { Media, Tag } from '@/payload-types'
+import { PinButton } from '@/components/DocumentView/PinButton'
+import { ScanViewer } from '@/components/DocumentView/ScanViewer'
+import type { Media, Tag, User } from '@/payload-types'
 
 function formatDate(
   iso: string | null | undefined,
@@ -33,6 +35,31 @@ function formatDate(
     default:
       return d.toLocaleDateString()
   }
+}
+
+function relativeTime(iso: string | undefined | null): string {
+  if (!iso) return ''
+  const ms = Date.now() - new Date(iso).getTime()
+  if (Number.isNaN(ms)) return ''
+  const seconds = Math.floor(ms / 1000)
+  if (seconds < 60) return 'just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return 'yesterday'
+  if (days < 7) return `${days} days ago`
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+function userLabel(value: number | User | null | undefined): string {
+  if (!value || typeof value !== 'object') return ''
+  return value.displayName || value.email || ''
 }
 
 export default async function DocumentPage({
@@ -84,6 +111,12 @@ export default async function DocumentPage({
   const dateLabel = formatDate(doc.dateOriginal, doc.dateOriginalPrecision)
   const isNote = doc.documentType === 'note'
 
+  const transcriberName = userLabel(transcription?.transcriber)
+  const translatorName = userLabel(translation?.translator)
+  const transcriptionEdited = relativeTime(transcription?.updatedAt)
+  const translationEdited = relativeTime(translation?.updatedAt)
+  const noteEdited = relativeTime(doc.updatedAt)
+
   return (
     <>
       <Chrome
@@ -101,7 +134,13 @@ export default async function DocumentPage({
       <main className="max-w-7xl mx-auto px-8 py-10 grid grid-cols-[1fr_18rem] gap-10">
         <div>
           <div className="mb-6">
-            <h1 className="font-serif-content text-3xl mb-2">{doc.title}</h1>
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <h1 className="font-serif-content text-3xl">{doc.title}</h1>
+              <PinButton
+                documentId={doc.id}
+                initialPinned={Boolean(doc.pinned)}
+              />
+            </div>
             {dateLabel ? (
               <div className="text-sm text-ink-soft">{dateLabel}</div>
             ) : null}
@@ -112,7 +151,14 @@ export default async function DocumentPage({
               <section className="mb-8">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-serif-content text-xl">Note:</h2>
-                  <CopyButton text={doc.body} label="Copy note body" />
+                  <div className="flex items-center gap-3">
+                    {noteEdited ? (
+                      <span className="text-xs text-ink-soft">
+                        last edit {noteEdited}
+                      </span>
+                    ) : null}
+                    <CopyButton text={doc.body} label="Copy note body" />
+                  </div>
                 </div>
                 <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-8">
                   <NoteBody source={doc.body} />
@@ -126,45 +172,25 @@ export default async function DocumentPage({
           ) : null}
 
           {!isNote && scans.length > 0 ? (
-            <section className="mb-10">
-              <div className="rounded-lg border border-[color:var(--border-soft)] mb-3 bg-paper-warm flex justify-center p-4">
-                <img
-                  src={scans[0].url || ''}
-                  alt={scans[0].alt || `${doc.title}, scan 1`}
-                  className="max-w-full max-h-[40rem] object-contain rounded shadow-sm"
-                />
-              </div>
-              {scans.length > 1 ? (
-                <div className="flex gap-2 items-center">
-                  {scans.map((scan, i) => (
-                    <a
-                      key={scan.id}
-                      href={scan.url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-20 h-24 rounded border border-[color:var(--border-soft)] overflow-hidden hover:border-seal"
-                      title={scan.alt || `Scan ${i + 1}`}
-                    >
-                      <img
-                        src={scan.url || ''}
-                        alt={scan.alt || `Scan ${i + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </a>
-                  ))}
-                </div>
-              ) : null}
-            </section>
+            <ScanViewer scans={scans} title={doc.title} />
           ) : null}
 
           {!isNote && transcription?.text ? (
             <section className="mb-8">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-serif-content text-xl font-cjk">中文录入</h2>
-                <CopyButton
-                  text={transcription.text || ''}
-                  label="Copy Chinese transcription"
-                />
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-ink-soft">
+                    {transcriberName ? `by ${transcriberName} · ` : ''}
+                    {transcriptionEdited
+                      ? `last edit ${transcriptionEdited}`
+                      : ''}
+                  </span>
+                  <CopyButton
+                    text={transcription.text || ''}
+                    label="Copy Chinese transcription"
+                  />
+                </div>
               </div>
               <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-6 font-cjk text-base leading-loose whitespace-pre-line">
                 {transcription.text}
@@ -176,14 +202,34 @@ export default async function DocumentPage({
             <section className="mb-8">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-serif-content text-xl">English Translation</h2>
-                <CopyButton
-                  text={translation.text || ''}
-                  label="Copy English translation"
-                />
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-ink-soft">
+                    {translatorName ? `by ${translatorName} · ` : ''}
+                    {translationEdited
+                      ? `last edit ${translationEdited}`
+                      : ''}
+                  </span>
+                  <CopyButton
+                    text={translation.text || ''}
+                    label="Copy English translation"
+                  />
+                </div>
               </div>
               <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-6 font-serif-content text-base leading-relaxed whitespace-pre-line">
                 {translation.text}
               </div>
+            </section>
+          ) : null}
+
+          {!isNote && doc.notes ? (
+            <section className="mt-8">
+              <h2 className="font-serif-content text-xl mb-3">Notes</h2>
+              <div className="bg-paper-warm border border-[color:var(--border-soft)] rounded-lg p-5 text-sm text-ink whitespace-pre-line">
+                {doc.notes}
+              </div>
+              <p className="mt-1 text-xs text-ink-faint">
+                Sidecar notes about this document. Inline editing in a follow-up.
+              </p>
             </section>
           ) : null}
         </div>
