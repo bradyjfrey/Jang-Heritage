@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Markdown reference · Jang Heritage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          paper: '#FAF6EF', 'paper-warm': '#F5EFE0', surface: '#FFFFFF',
+          ink: '#2A1F1A', 'ink-soft': '#6B5D52', 'ink-faint': '#9C8E81',
+          seal: '#8B2D29', 'seal-soft': '#B25652',
+          gold: '#A8843E', 'gold-soft': '#C9A865',
+          'border-soft': '#E5DCC8', 'border-strong': '#C8B998'
+        }
+      }}
+    }
+  </script>
+  <link rel="stylesheet" href="_shared.css">
+  <style>
+    /* Source pane: monospace, paper-warm background */
+    pre.md-src {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      background: var(--paper-warm);
+      color: var(--ink);
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-soft);
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+    }
+
+    /* Rendered pane styles, mirror document-note.html .md-body. */
+    .md-body { color: var(--ink); line-height: 1.6; font-size: 0.95rem; }
+    .md-body > *:first-child { margin-top: 0; }
+    .md-body > *:last-child { margin-bottom: 0; }
+    .md-body h1 { font-family: "Source Serif 4", "Lora", Georgia, serif; font-size: 1.5rem; margin: 0.6rem 0 0.5rem; }
+    .md-body h2 { font-family: "Source Serif 4", "Lora", Georgia, serif; font-size: 1.25rem; margin: 0.6rem 0 0.4rem; }
+    .md-body h3 { font-family: "Source Serif 4", "Lora", Georgia, serif; font-size: 1.05rem; margin: 0.5rem 0 0.35rem; }
+    .md-body p { margin: 0.45rem 0; }
+    .md-body ul { margin: 0.4rem 0 0.6rem 1.25rem; list-style: disc; }
+    .md-body ol { margin: 0.4rem 0 0.6rem 1.5rem; list-style: decimal; }
+    .md-body li { margin: 0.2rem 0; }
+    .md-body strong { font-weight: 600; }
+    .md-body em { font-style: italic; }
+    .md-body del { text-decoration: line-through; color: var(--ink-soft); }
+    .md-body a { color: var(--seal); text-decoration: underline; text-underline-offset: 2px; }
+    .md-body a:hover { color: black; }
+    .md-body code:not(pre code) {
+      background: var(--paper-warm);
+      padding: 0.05rem 0.35rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .md-body pre {
+      background: var(--paper-warm);
+      border: 1px solid var(--border-soft);
+      padding: 0.65rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+    }
+    .md-body blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: 0.85rem;
+      color: var(--ink-soft);
+      margin: 0.5rem 0;
+    }
+    .md-body hr {
+      border: 0; border-top: 1px solid var(--border-soft); margin: 0.85rem 0;
+    }
+    .md-body table {
+      border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem;
+    }
+    .md-body th, .md-body td {
+      border: 1px solid var(--border-soft);
+      padding: 0.35rem 0.6rem;
+      text-align: left;
+    }
+    .md-body th { background: var(--paper-warm); font-weight: 600; }
+    .md-body input[type="checkbox"] { margin-right: 0.3rem; vertical-align: middle; }
+    .md-body ul.task-list { list-style: none; margin-left: 0.25rem; }
+
+    .row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 1.25rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .row { grid-template-columns: 1fr; }
+    }
+
+    .feature {
+      padding: 1.25rem 0;
+      border-bottom: 1px dashed var(--border-soft);
+    }
+    .feature:last-child { border-bottom: 0; }
+    .feature h3 {
+      font-family: "Source Serif 4", "Lora", Georgia, serif;
+      font-size: 1.1rem;
+      margin: 0 0 0.5rem;
+    }
+    .feature .blurb {
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+      margin: 0 0 0.75rem;
+    }
+    .col-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-faint);
+      margin-bottom: 0.35rem;
+    }
+  </style>
+</head>
+<body class="font-sans">
+
+<!-- TOP BAR -->
+<header class="border-b border-[color:var(--border-soft)] bg-paper sticky top-0 z-20">
+  <div class="flex items-center gap-6 px-6 h-16">
+    <a href="home.html" class="flex items-center gap-2.5 shrink-0">
+      <span class="font-cjk text-3xl text-seal leading-none">陳</span>
+      <span class="font-serif-content text-lg tracking-tight">Jang Heritage</span>
+    </a>
+    <div class="flex-1 max-w-xl">
+      <div class="relative">
+        <input type="text" placeholder="Search 中文 or English…"
+          class="w-full bg-surface border border-[color:var(--border-soft)] rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z"/></svg>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <div class="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium">B</div>
+    </div>
+  </div>
+  <div class="px-6 py-2 text-xs text-ink-soft border-t border-[color:var(--border-soft)] flex items-center gap-2">
+    <a href="home.html" class="hover:text-ink">Home</a>
+    <span>/</span>
+    <span class="text-ink">Markdown reference</span>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-8 py-10">
+
+  <div class="mb-8">
+    <h1 class="font-serif-content text-3xl mb-2">Markdown reference</h1>
+    <p class="text-ink-soft">Note bodies render with GitHub-Flavored Markdown. Type the syntax in the left column, see the rendered output on the right.</p>
+  </div>
+
+  <div class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-6">
+
+    <!-- Headings -->
+    <section class="feature">
+      <h3>Headings</h3>
+      <p class="blurb">One <code>#</code> through six <code>######</code>. The note title above the body is the page heading, so most note bodies start at <code>##</code>.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src"># Largest heading
+## Section heading
+### Subsection
+#### Smaller subsection</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <h1>Largest heading</h1>
+            <h2>Section heading</h2>
+            <h3>Subsection</h3>
+            <h3 style="font-size:0.95rem">Smaller subsection</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Emphasis -->
+    <section class="feature">
+      <h3>Emphasis</h3>
+      <p class="blurb">Bold, italic, and strikethrough. Use sparingly.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">**Bold** for emphasis.
+*Italic* for titles or terms.
+***Both*** for stronger weight.
+~~Strikethrough~~ for crossed-out text.</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <p><strong>Bold</strong> for emphasis.<br>
+            <em>Italic</em> for titles or terms.<br>
+            <strong><em>Both</em></strong> for stronger weight.<br>
+            <del>Strikethrough</del> for crossed-out text.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lists -->
+    <section class="feature">
+      <h3>Lists</h3>
+      <p class="blurb">Hyphen for unordered, number for ordered. Indent two spaces to nest.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">- First contact
+- Second contact
+  - Sub-detail
+  - Another sub-detail
+- Third contact
+
+1. First step
+2. Second step
+3. Third step</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <ul>
+              <li>First contact</li>
+              <li>Second contact
+                <ul>
+                  <li>Sub-detail</li>
+                  <li>Another sub-detail</li>
+                </ul>
+              </li>
+              <li>Third contact</li>
+            </ul>
+            <ol>
+              <li>First step</li>
+              <li>Second step</li>
+              <li>Third step</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task lists -->
+    <section class="feature">
+      <h3>Task lists</h3>
+      <p class="blurb">Checkboxes you can check off in the source.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">- [x] Found call number
+- [x] Emailed Jianye He
+- [ ] Visit library in person
+- [ ] Photograph relevant pages</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <ul class="task-list">
+              <li><input type="checkbox" checked disabled> Found call number</li>
+              <li><input type="checkbox" checked disabled> Emailed Jianye He</li>
+              <li><input type="checkbox" disabled> Visit library in person</li>
+              <li><input type="checkbox" disabled> Photograph relevant pages</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Links -->
+    <section class="feature">
+      <h3>Links</h3>
+      <p class="blurb">Inline <code>[text](url)</code>, or paste a raw URL and it becomes a link automatically.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">[UC Berkeley catalog](https://search.library.berkeley.edu/permalink/01UCS_BER/1thfj9n/alma991046671319706532)
+
+Or paste raw: https://www.loc.gov/</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <p><a href="#">UC Berkeley catalog</a></p>
+            <p>Or paste raw: <a href="#">https://www.loc.gov/</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blockquotes -->
+    <section class="feature">
+      <h3>Blockquotes</h3>
+      <p class="blurb">For quoting a source, a translation, or a passage.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">&gt; "終子二00一年三月廿二日"
+&gt; Passed away on March 22, 2001.
+
+The character 終 here is classical/literary.</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <blockquote>
+              <p>"終子二00一年三月廿二日"<br>
+              Passed away on March 22, 2001.</p>
+            </blockquote>
+            <p>The character 終 here is classical/literary.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Code -->
+    <section class="feature">
+      <h3>Code</h3>
+      <p class="blurb">Backticks for inline code; triple-backtick fenced blocks for longer snippets, transcribed inscriptions, or tabular data that's easier as plain text.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">Inline: the call number `AAS MICROFILMS CA 02`.
+
+```
+6 N 35
+廣東中山石岐鲭尾鄉
+```</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <p>Inline: the call number <code>AAS MICROFILMS CA 02</code>.</p>
+            <pre><code>6 N 35
+廣東中山石岐鲭尾鄉</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tables -->
+    <section class="feature">
+      <h3>Tables</h3>
+      <p class="blurb">Pipe-delimited columns, dashes for the header row.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">| Line | Chinese | English |
+| --- | --- | --- |
+| 1 | 陳阿鴻 | Ah Hung Chan |
+| 2 | 8月7日 | August 7 |
+| 3 | 6 N 35 | Plot 6 N 35 |</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <table>
+              <thead><tr><th>Line</th><th>Chinese</th><th>English</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>陳阿鴻</td><td>Ah Hung Chan</td></tr>
+                <tr><td>2</td><td>8月7日</td><td>August 7</td></tr>
+                <tr><td>3</td><td>6 N 35</td><td>Plot 6 N 35</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Horizontal rule -->
+    <section class="feature">
+      <h3>Horizontal rule</h3>
+      <p class="blurb">Three dashes on their own line. Useful for separating sections of a long note.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">First section.
+
+---
+
+Second section.</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <p>First section.</p>
+            <hr>
+            <p>Second section.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Line breaks -->
+    <section class="feature">
+      <h3>Line breaks</h3>
+      <p class="blurb">A blank line between paragraphs. For a hard break inside a paragraph, end the line with two spaces or a backslash.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">First paragraph.
+
+Second paragraph.
+
+Line one\
+Line two</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <p>First paragraph.</p>
+            <p>Second paragraph.</p>
+            <p>Line one<br>Line two</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mixed Chinese -->
+    <section class="feature">
+      <h3>Mixing Chinese and English inline</h3>
+      <p class="blurb">Just type. CJK and Latin characters render side by side without escaping. Markdown formatting works around them normally.</p>
+      <div class="row">
+        <div>
+          <div class="col-label">Source</div>
+<pre class="md-src">**Goal:** Find article featuring 陳阿鴻 (Chan, Ah Hung) in *Jinshan Shibao* 金山時報, March 1940.</pre>
+        </div>
+        <div>
+          <div class="col-label">Rendered</div>
+          <div class="md-body">
+            <p><strong>Goal:</strong> Find article featuring 陳阿鴻 (Chan, Ah Hung) in <em>Jinshan Shibao</em> 金山時報, March 1940.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <p class="mt-6 text-xs text-ink-faint">Rendered with <code>react-markdown</code> + <code>remark-gfm</code>. Default sanitization is on, so HTML inside the source is escaped.</p>
+</main>
+
+</body>
+</html>

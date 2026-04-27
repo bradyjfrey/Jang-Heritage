@@ -97,8 +97,6 @@
       <input type="text" value="" placeholder="Untitled note. Add a title or come back to it later."
         class="w-full max-w-xl bg-transparent border-0 font-serif-content text-lg focus:outline-none focus:bg-white focus:rounded focus:px-2 focus:py-0.5" autofocus>
     </div>
-    <span class="text-xs text-ink-faint uppercase tracking-wider">Note</span>
-    <div class="h-6 w-px bg-[color:var(--border-soft)]"></div>
     <span class="save-status" style="opacity:0.5"><span class="dot" style="background:#9C8E81"></span>Not yet saved</span>
     <div class="h-6 w-px bg-[color:var(--border-soft)]"></div>
     <div class="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium">B</div>
@@ -109,9 +107,9 @@
     <div class="pane">
       <div class="pane-header">
         <div class="flex items-center gap-2">
-          <span class="text-base">Body</span>
+          <span class="text-base">Note</span>
           <span class="text-ink-faint">·</span>
-          <span class="text-ink-soft">Mixed language, markdown supported</span>
+          <span class="text-ink-soft">Mixed language, <a href="markdown.html" target="_blank" class="text-seal hover:text-black underline underline-offset-2">markdown supported</a></span>
         </div>
         <div class="flex items-center gap-2">
           <div class="flex items-center gap-1.5" title="Adjust text size">
@@ -120,11 +118,6 @@
           </div>
           <span class="text-ink-faint text-xs">0 words</span>
         </div>
-      </div>
-
-      <div class="md-hint">
-        <span>Markdown: <code># heading</code> <code>**bold**</code> <code>- list</code> <code>[link](url)</code></span>
-        <span class="text-ink-faint">Renders on the document page</span>
       </div>
 
       <div class="pane-body scroll-area">

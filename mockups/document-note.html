@@ -117,12 +117,15 @@
     <section class="mb-8">
       <div class="flex items-center justify-between mb-3">
         <h2 class="font-serif-content text-xl">Note:</h2>
-        <button class="copy-btn" data-target="#note-body" aria-label="Copy note body" title="Copy to clipboard">
-          <svg viewBox="0 0 24 24" class="copy-icon">
-            <rect class="copy-back" x="8" y="8" width="12" height="12" rx="1.5"/>
-            <rect class="copy-front" x="4" y="4" width="12" height="12" rx="1.5"/>
-          </svg>
-        </button>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-ink-soft">by Brady J. Frey · last edit 2 hours ago</span>
+          <button class="copy-btn" data-target="#note-body" aria-label="Copy note body" title="Copy to clipboard">
+            <svg viewBox="0 0 24 24" class="copy-icon">
+              <rect class="copy-back" x="8" y="8" width="12" height="12" rx="1.5"/>
+              <rect class="copy-front" x="4" y="4" width="12" height="12" rx="1.5"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div id="note-body" class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-8 md-body">
         <h2>金山時報 Jinshan Shibao = Chinese Times</h2>
@@ -141,7 +144,6 @@
           <li>Spoke with <strong>Sine Hwang Jensen</strong> at the Ethnic Studies Library. They provided the call number.</li>
         </ul>
       </div>
-      <p class="mt-2 text-xs text-ink-faint">Markdown source rendered with react-markdown + remark-gfm. Edit the source via the Edit CTA.</p>
     </section>
   </div>
 
@@ -200,7 +202,6 @@
     <section class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
       <div class="text-[11px] uppercase tracking-wider text-ink-faint mb-3">Author</div>
       <div class="text-sm text-ink-soft">Brady J. Frey</div>
-      <p class="mt-2 text-xs text-ink-faint">Notes don't carry transcriber/translator fields.</p>
     </section>
 
     <section class="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
