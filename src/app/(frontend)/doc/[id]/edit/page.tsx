@@ -1,5 +1,5 @@
 import { headers as getHeaders } from 'next/headers'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
@@ -17,6 +17,13 @@ export default async function EditPage({
   const payload = await getPayload({ config: await config })
   const headers = await getHeaders()
   const { user } = await payload.auth({ headers })
+
+  // Auth gate: anonymous visitors get punted to Payload's login page,
+  // with a redirect back here so the editor opens after sign-in.
+  if (!user) {
+    const next = encodeURIComponent(`/doc/${docId}/edit`)
+    redirect(`/admin/login?redirect=${next}`)
+  }
 
   const doc = await payload
     .findByID({ collection: 'documents', id: docId, depth: 2 })
