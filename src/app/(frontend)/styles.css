@@ -24,7 +24,6 @@ html, body { height: 100%; }
 body {
   background: var(--paper);
   color: var(--ink);
-  -webkit-font-smoothing: antialiased;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 

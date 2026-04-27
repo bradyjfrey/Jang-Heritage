@@ -29,6 +29,12 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
   const [scanIndex, setScanIndex] = useState(0)
   const currentScan = scans[scanIndex]
 
+  // Image zoom (percent of the pane width). 100 = fill the column. Steps in 25%.
+  const [zoom, setZoom] = useState(100)
+  const zoomOut = () => setZoom((z) => Math.max(25, z - 25))
+  const zoomIn = () => setZoom((z) => Math.min(400, z + 25))
+  const zoomReset = () => setZoom(100)
+
   const userInitial =
     user?.displayName?.[0]?.toUpperCase() ||
     user?.email?.[0]?.toUpperCase() ||
@@ -96,21 +102,63 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
               </button>
             </div>
             <div className="flex items-center gap-1.5">
-              <button className="pill-btn" disabled>−</button>
-              <button className="pill-btn" disabled>100%</button>
-              <button className="pill-btn" disabled>+</button>
-              <button className="pill-btn" disabled>⛶</button>
-              <button className="pill-btn" disabled>⤓</button>
+              <button
+                className="pill-btn"
+                onClick={zoomOut}
+                disabled={!currentScan || zoom <= 25}
+                title="Zoom out"
+              >
+                −
+              </button>
+              <button
+                className="pill-btn"
+                onClick={zoomReset}
+                disabled={!currentScan}
+                title="Reset zoom"
+              >
+                {zoom}%
+              </button>
+              <button
+                className="pill-btn"
+                onClick={zoomIn}
+                disabled={!currentScan || zoom >= 400}
+                title="Zoom in"
+              >
+                +
+              </button>
+              <a
+                className="pill-btn"
+                href={currentScan?.url || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-disabled={!currentScan}
+                style={!currentScan ? { pointerEvents: 'none', opacity: 0.5 } : undefined}
+                title="Open full size in a new tab"
+              >
+                ⛶
+              </a>
+              <a
+                className="pill-btn"
+                href={currentScan?.url || '#'}
+                download={currentScan?.filename || ''}
+                aria-disabled={!currentScan}
+                style={!currentScan ? { pointerEvents: 'none', opacity: 0.5 } : undefined}
+                title="Download original"
+              >
+                ⤓
+              </a>
             </div>
           </div>
           <div
-            className={`${styles.scrollArea} scroll-area overflow-auto bg-paper-warm flex items-start justify-center p-4`}
+            className={`${styles.scrollArea} scroll-area bg-paper-warm flex items-start justify-center p-4`}
+            style={{ overflow: zoom > 100 ? 'auto' : 'hidden auto' }}
           >
             {currentScan?.url ? (
               <img
                 src={currentScan.url}
                 alt={currentScan.alt || `Scan ${scanIndex + 1} of ${scans.length}`}
                 className={`${styles.scan} rounded shadow-sm`}
+                style={{ width: `${zoom}%`, maxWidth: 'none' }}
               />
             ) : (
               <div className="text-ink-faint text-sm py-8">No scans attached</div>
