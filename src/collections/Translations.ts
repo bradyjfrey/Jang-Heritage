@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { updateTranslationSearchVector } from '../hooks/updateSearchVector'
 
 export const Translations: CollectionConfig = {
   slug: 'translations',
@@ -8,6 +9,9 @@ export const Translations: CollectionConfig = {
   },
   versions: {
     maxPerDoc: 50,
+  },
+  hooks: {
+    afterChange: [updateTranslationSearchVector],
   },
   fields: [
     {

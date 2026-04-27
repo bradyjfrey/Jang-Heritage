@@ -12,6 +12,7 @@ import { Documents } from './collections/Documents'
 import { Transcriptions } from './collections/Transcriptions'
 import { Translations } from './collections/Translations'
 import { Tags } from './collections/Tags'
+import { addSearchVectors } from './db/searchVectors'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -33,6 +34,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    afterSchemaInit: [addSearchVectors],
   }),
   sharp,
   plugins: [

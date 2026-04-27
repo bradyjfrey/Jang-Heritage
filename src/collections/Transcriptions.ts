@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { segmentChinese } from '../hooks/segmentChinese'
+import { updateTranscriptionSearchVector } from '../hooks/updateSearchVector'
 
 export const Transcriptions: CollectionConfig = {
   slug: 'transcriptions',
@@ -19,6 +20,7 @@ export const Transcriptions: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [updateTranscriptionSearchVector],
   },
   fields: [
     {

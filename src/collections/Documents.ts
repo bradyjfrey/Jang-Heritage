@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { segmentChinese } from '../hooks/segmentChinese'
 import { stripMarkdown } from '../hooks/stripMarkdown'
+import { updateDocumentBodySearchVector } from '../hooks/updateSearchVector'
 
 const documentTypes = [
   'letter',
@@ -25,6 +26,7 @@ export const Documents: CollectionConfig = {
     maxPerDoc: 50,
   },
   hooks: {
+    afterChange: [updateDocumentBodySearchVector],
     beforeChange: [
       async ({ data, operation }) => {
         // For note-type documents on create, default the date to today and
