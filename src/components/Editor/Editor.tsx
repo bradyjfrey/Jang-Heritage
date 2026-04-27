@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Document, Media, Transcription, Translation, User } from '@/payload-types'
 
 import styles from './Editor.module.css'
+import { useAutosave } from './useAutosave'
 
 type Props = {
   document: Document
@@ -13,12 +14,37 @@ type Props = {
   user: User | null
 }
 
-// Side-by-side editor matching mockups/edit.html. Read-only persistence in
-// this commit; autosave + conflict detection land in the next one. Typing
-// updates local state so the UX feels live, but reloading drops changes.
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
+// Side-by-side editor matching mockups/edit.html. Autosave on a 3s debounce
+// per field, plus immediate save on blur. Conflict detection lands as a
+// follow-up commit (will use If-Match on updatedAt).
 export function Editor({ document: doc, transcription, translation, user }: Props) {
+  // Initial values from server-fetched data.
+  const [title, setTitle] = useState(doc.title)
   const [chineseText, setChineseText] = useState(transcription?.text || '')
   const [englishText, setEnglishText] = useState(translation?.text || '')
+
+  // The Transcription / Translation rows may not exist yet. Track whether
+  // we have IDs; first save creates the row and stores the ID, subsequent
+  // saves PATCH it.
+  const [transcriptionId, setTranscriptionId] = useState<number | null>(
+    transcription?.id ?? null,
+  )
+  const [translationId, setTranslationId] = useState<number | null>(
+    translation?.id ?? null,
+  )
+
+  // Save state
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [savedAt, setSavedAt] = useState<number | null>(null)
+  const [savedAgoLabel, setSavedAgoLabel] = useState('')
+
+  // Per-field flush handles for "save now" on blur or unmount.
+  const flushTitle = useRef<(() => void) | null>(null)
+  const flushChinese = useRef<(() => void) | null>(null)
+  const flushEnglish = useRef<(() => void) | null>(null)
+
   const [chineseSize, setChineseSize] = useState(16)
   const [englishSize, setEnglishSize] = useState(16)
 
@@ -29,7 +55,6 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
   const [scanIndex, setScanIndex] = useState(0)
   const currentScan = scans[scanIndex]
 
-  // Image zoom (percent of the pane width). 100 = fill the column. Steps in 25%.
   const [zoom, setZoom] = useState(100)
   const zoomOut = () => setZoom((z) => Math.max(25, z - 25))
   const zoomIn = () => setZoom((z) => Math.min(400, z + 25))
@@ -44,6 +69,126 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
     ? englishText.trim().split(/\s+/).length
     : 0
 
+  // ---- save helpers --------------------------------------------------------
+
+  async function withSaveStatus(work: () => Promise<void>) {
+    setSaveStatus('saving')
+    try {
+      await work()
+      setSavedAt(Date.now())
+      setSaveStatus('saved')
+    } catch (err) {
+      console.error('Save failed', err)
+      setSaveStatus('error')
+    }
+  }
+
+  async function saveTitle(value: string) {
+    if (value === doc.title) return
+    await withSaveStatus(async () => {
+      const res = await fetch(`/api/documents/${doc.id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: value }),
+      })
+      if (!res.ok) throw new Error(`Title save failed: ${res.status}`)
+    })
+  }
+
+  async function saveTranscription(value: string) {
+    await withSaveStatus(async () => {
+      if (transcriptionId == null) {
+        const res = await fetch('/api/transcriptions', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ document: doc.id, text: value }),
+        })
+        if (!res.ok) throw new Error(`Transcription create failed: ${res.status}`)
+        const json = await res.json()
+        const created = json?.doc ?? json
+        if (created?.id != null) setTranscriptionId(created.id)
+      } else {
+        const res = await fetch(`/api/transcriptions/${transcriptionId}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: value }),
+        })
+        if (!res.ok) throw new Error(`Transcription save failed: ${res.status}`)
+      }
+    })
+  }
+
+  async function saveTranslation(value: string) {
+    await withSaveStatus(async () => {
+      if (translationId == null) {
+        const res = await fetch('/api/translations', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ document: doc.id, text: value }),
+        })
+        if (!res.ok) throw new Error(`Translation create failed: ${res.status}`)
+        const json = await res.json()
+        const created = json?.doc ?? json
+        if (created?.id != null) setTranslationId(created.id)
+      } else {
+        const res = await fetch(`/api/translations/${translationId}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: value }),
+        })
+        if (!res.ok) throw new Error(`Translation save failed: ${res.status}`)
+      }
+    })
+  }
+
+  useAutosave({ value: title, onSave: saveTitle, flushRef: flushTitle })
+  useAutosave({ value: chineseText, onSave: saveTranscription, flushRef: flushChinese })
+  useAutosave({ value: englishText, onSave: saveTranslation, flushRef: flushEnglish })
+
+  // Re-render the "Saved 5s ago" label every 5s.
+  useEffect(() => {
+    if (saveStatus !== 'saved' || savedAt == null) {
+      setSavedAgoLabel('')
+      return
+    }
+    const tick = () => {
+      const seconds = Math.max(0, Math.floor((Date.now() - savedAt) / 1000))
+      if (seconds < 5) setSavedAgoLabel('Saved just now')
+      else if (seconds < 60) setSavedAgoLabel(`Saved ${seconds}s ago`)
+      else if (seconds < 3600)
+        setSavedAgoLabel(`Saved ${Math.floor(seconds / 60)}m ago`)
+      else setSavedAgoLabel('Saved')
+    }
+    tick()
+    const id = setInterval(tick, 5000)
+    return () => clearInterval(id)
+  }, [saveStatus, savedAt])
+
+  // Warn before leaving with pending edits (during the debounce window).
+  useEffect(() => {
+    function handler(e: BeforeUnloadEvent) {
+      if (saveStatus === 'saving') {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [saveStatus])
+
+  function statusLabel(): { text: string; cls: string } {
+    if (saveStatus === 'saving') return { text: 'Saving…', cls: 'save-status saving' }
+    if (saveStatus === 'error') return { text: 'Save failed', cls: 'save-status' }
+    if (saveStatus === 'saved') return { text: savedAgoLabel || 'Saved', cls: 'save-status' }
+    return { text: 'Up to date', cls: 'save-status' }
+  }
+  const status = statusLabel()
+
   return (
     <div className={styles.editShell}>
       <header className="border-b border-[color:var(--border-soft)] bg-paper flex items-center px-4 gap-4">
@@ -57,13 +202,33 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
         <div className="flex-1 min-w-0">
           <input
             type="text"
-            defaultValue={doc.title}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => flushTitle.current?.()}
             className="w-full max-w-xl bg-transparent border-0 font-serif-content text-lg focus:outline-none focus:bg-white focus:rounded focus:px-2 focus:py-0.5"
           />
         </div>
-        <span className="save-status" style={{ opacity: 0.6 }}>
-          <span className="dot" style={{ background: 'var(--ink-faint)' }}></span>
-          Read only (save in next commit)
+        <span
+          className={status.cls}
+          style={
+            saveStatus === 'error'
+              ? { color: 'var(--seal)' }
+              : saveStatus === 'idle'
+                ? { opacity: 0.55 }
+                : undefined
+          }
+        >
+          <span
+            className="dot"
+            style={
+              saveStatus === 'error'
+                ? { background: 'var(--seal)' }
+                : saveStatus === 'idle'
+                  ? { background: 'var(--ink-faint)' }
+                  : undefined
+            }
+          ></span>
+          {status.text}
         </span>
         <div className="h-6 w-px bg-[color:var(--border-soft)]"></div>
         <button className="pill-btn">History</button>
@@ -73,7 +238,6 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
       </header>
 
       <div className={styles.editMain}>
-        {/* IMAGE PANE */}
         <div className={`${styles.imagePane} ${styles.pane}`}>
           <div className={styles.paneHeader}>
             <div className="flex items-center gap-2">
@@ -173,7 +337,6 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
           </div>
         </div>
 
-        {/* CHINESE PANE */}
         <div className={`${styles.pane}`}>
           <div className={styles.paneHeader}>
             <div className="flex items-center gap-2">
@@ -207,12 +370,12 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
               spellCheck={false}
               value={chineseText}
               onChange={(e) => setChineseText(e.target.value)}
+              onBlur={() => flushChinese.current?.()}
               style={{ fontSize: `${chineseSize}px` }}
             />
           </div>
         </div>
 
-        {/* ENGLISH PANE */}
         <div className={`${styles.pane}`}>
           <div className={styles.paneHeader}>
             <div className="flex items-center gap-2">
@@ -246,6 +409,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
               spellCheck={true}
               value={englishText}
               onChange={(e) => setEnglishText(e.target.value)}
+              onBlur={() => flushEnglish.current?.()}
               style={{ fontSize: `${englishSize}px` }}
             />
           </div>
