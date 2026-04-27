@@ -34,7 +34,7 @@ export const Transcriptions: CollectionConfig = {
     {
       name: 'text',
       type: 'textarea',
-      label: '中文 transcription',
+      label: '中文录入',
     },
     {
       name: 'textSegmented',
