@@ -1,4 +1,6 @@
 import type { CollectionConfig } from 'payload'
+import { segmentChinese } from '../hooks/segmentChinese'
+import { stripMarkdown } from '../hooks/stripMarkdown'
 
 const documentTypes = [
   'letter',
@@ -21,6 +23,22 @@ export const Documents: CollectionConfig = {
   },
   versions: {
     maxPerDoc: 50,
+  },
+  hooks: {
+    beforeChange: [
+      async ({ data }) => {
+        // For note-type documents, re-derive bodySegmented on every save:
+        // strip markdown syntax so it doesn't pollute the index, then run
+        // nodejieba so embedded Chinese is searchable. Other types skip.
+        if (data.documentType === 'note') {
+          const plain = await stripMarkdown(data.body)
+          data.bodySegmented = segmentChinese(plain)
+        } else {
+          data.bodySegmented = null
+        }
+        return data
+      },
+    ],
   },
   fields: [
     {

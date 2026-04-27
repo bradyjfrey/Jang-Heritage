@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { segmentChinese } from '../hooks/segmentChinese'
 
 export const Transcriptions: CollectionConfig = {
   slug: 'transcriptions',
@@ -8,6 +9,16 @@ export const Transcriptions: CollectionConfig = {
   },
   versions: {
     maxPerDoc: 50,
+  },
+  hooks: {
+    beforeChange: [
+      ({ data }) => {
+        // Re-segment on every save so textSegmented stays in sync with text.
+        // Keeps Postgres tsvector indexing consistent.
+        data.textSegmented = segmentChinese(data.text)
+        return data
+      },
+    ],
   },
   fields: [
     {
