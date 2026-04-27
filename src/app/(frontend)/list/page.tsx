@@ -157,7 +157,7 @@ function Card({ doc }: { doc: Document }) {
           className="absolute inset-0 w-full h-full object-cover"
         />
       ) : (
-        <div className="note-card-bg absolute inset-0"></div>
+        <div className="note-card-bg"></div>
       )}
       <div className="absolute inset-x-0 bottom-0 bg-seal px-3 py-2">
         <div className="text-white text-sm font-serif-content leading-tight line-clamp-1">
