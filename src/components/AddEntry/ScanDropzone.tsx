@@ -5,6 +5,27 @@ import { useState } from 'react'
 
 type Status = 'idle' | 'uploading' | 'creating' | 'error'
 
+// Best-effort error message extraction from a Payload 4xx/5xx response.
+async function readErrorDetail(res: Response): Promise<string> {
+  const cloned = res.clone()
+  try {
+    const json = await res.json()
+    const msg =
+      json?.errors?.[0]?.message ||
+      json?.message ||
+      (typeof json === 'string' ? json : '')
+    if (msg) return msg
+    return JSON.stringify(json).slice(0, 200)
+  } catch {
+    try {
+      const text = await cloned.text()
+      return text.slice(0, 200)
+    } catch {
+      return ''
+    }
+  }
+}
+
 // Drag-and-drop / file-picker target. On selection: uploads each file to
 // /api/media (multipart, attaches to R2), then POSTs a new Document with
 // those media IDs as scans, then routes into /doc/<newId>/edit.
@@ -31,14 +52,22 @@ export function ScanDropzone() {
         const file = files[i]
         const fd = new FormData()
         fd.append('file', file)
-        fd.append('alt', file.name)
+        // Payload 3 accepts a JSON envelope as `_payload` alongside the
+        // file part. Cleaner than appending each field individually.
+        fd.append(
+          '_payload',
+          JSON.stringify({ alt: file.name || 'Untitled scan' }),
+        )
         const res = await fetch('/api/media', {
           method: 'POST',
           credentials: 'include',
           body: fd,
         })
         if (!res.ok) {
-          throw new Error(`Upload failed for ${file.name} (${res.status})`)
+          const detail = await readErrorDetail(res)
+          throw new Error(
+            `Upload failed for ${file.name} (${res.status})${detail ? `: ${detail}` : ''}`,
+          )
         }
         const json = await res.json()
         const created = json?.doc ?? json
@@ -58,7 +87,10 @@ export function ScanDropzone() {
         }),
       })
       if (!docRes.ok) {
-        throw new Error(`Document create failed (${docRes.status})`)
+        const detail = await readErrorDetail(docRes)
+        throw new Error(
+          `Document create failed (${docRes.status})${detail ? `: ${detail}` : ''}`,
+        )
       }
       const docJson = await docRes.json()
       const createdDoc = docJson?.doc ?? docJson
