@@ -100,7 +100,9 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
 
   function jsonHeaders(ifUnmodifiedSince?: string | null): HeadersInit {
     const h: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (ifUnmodifiedSince) h['If-Unmodified-Since'] = ifUnmodifiedSince
+    // Custom header (not standard If-Unmodified-Since) so we can use ISO-8601
+    // timestamps. Standard HTTP-date format is awkward for milliseconds.
+    if (ifUnmodifiedSince) h['X-If-Unmodified-Since'] = ifUnmodifiedSince
     return h
   }
 
