@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { Editor } from '@/components/Editor/Editor'
+import { NoteEditor } from '@/components/Editor/NoteEditor'
 
 export default async function EditPage({
   params,
@@ -29,6 +30,12 @@ export default async function EditPage({
     .findByID({ collection: 'documents', id: docId, depth: 2 })
     .catch(() => null)
   if (!doc) notFound()
+
+  // Notes use a single-pane editor that saves Documents.body directly;
+  // skip the Transcriptions/Translations fetch entirely.
+  if (doc.documentType === 'note') {
+    return <NoteEditor document={doc} user={user} />
+  }
 
   const [transcriptions, translations] = await Promise.all([
     payload.find({
