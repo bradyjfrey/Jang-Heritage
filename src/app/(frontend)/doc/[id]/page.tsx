@@ -111,8 +111,16 @@ export default async function DocumentPage({
   const dateLabel = formatDate(doc.dateOriginal, doc.dateOriginalPrecision)
   const isNote = doc.documentType === 'note'
 
-  const transcriberName = userLabel(transcription?.transcriber)
-  const translatorName = userLabel(translation?.translator)
+  // Prefer lastEditedBy (auto-stamped on every save). Fall back to the
+  // semantic transcriber/translator field for rows saved before the
+  // lastEditedBy hook landed.
+  const transcriberName =
+    userLabel(transcription?.lastEditedBy) ||
+    userLabel(transcription?.transcriber)
+  const translatorName =
+    userLabel(translation?.lastEditedBy) ||
+    userLabel(translation?.translator)
+  const noteEditorName = userLabel(doc.lastEditedBy)
   const transcriptionEdited = relativeTime(transcription?.updatedAt)
   const translationEdited = relativeTime(translation?.updatedAt)
   const noteEdited = relativeTime(doc.updatedAt)
@@ -152,11 +160,10 @@ export default async function DocumentPage({
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-serif-content text-xl">Note:</h2>
                   <div className="flex items-center gap-3">
-                    {noteEdited ? (
-                      <span className="text-xs text-ink-soft">
-                        last edit {noteEdited}
-                      </span>
-                    ) : null}
+                    <span className="text-xs text-ink-soft">
+                      {noteEditorName ? `by ${noteEditorName} · ` : ''}
+                      {noteEdited ? `last edit ${noteEdited}` : ''}
+                    </span>
                     <CopyButton text={doc.body} label="Copy note body" />
                   </div>
                 </div>

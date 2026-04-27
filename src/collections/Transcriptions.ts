@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { checkIfUnmodifiedSince } from '../hooks/checkIfUnmodifiedSince'
 import { segmentChinese } from '../hooks/segmentChinese'
+import { setLastEditedBy } from '../hooks/setLastEditedBy'
 import { updateTranscriptionSearchVector } from '../hooks/updateSearchVector'
 
 export const Transcriptions: CollectionConfig = {
@@ -15,6 +16,7 @@ export const Transcriptions: CollectionConfig = {
   hooks: {
     beforeChange: [
       checkIfUnmodifiedSince,
+      setLastEditedBy,
       ({ data }) => {
         // Re-segment on every save so textSegmented stays in sync with text.
         // Keeps Postgres tsvector indexing consistent.
@@ -54,6 +56,16 @@ export const Transcriptions: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       hasMany: false,
+    },
+    {
+      name: 'lastEditedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: false,
+      admin: {
+        readOnly: true,
+        description: 'Auto-set on every save.',
+      },
     },
   ],
 }

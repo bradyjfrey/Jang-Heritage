@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { checkIfUnmodifiedSince } from '../hooks/checkIfUnmodifiedSince'
+import { setLastEditedBy } from '../hooks/setLastEditedBy'
 import { updateTranslationSearchVector } from '../hooks/updateSearchVector'
 
 export const Translations: CollectionConfig = {
@@ -12,7 +13,7 @@ export const Translations: CollectionConfig = {
     maxPerDoc: 50,
   },
   hooks: {
-    beforeChange: [checkIfUnmodifiedSince],
+    beforeChange: [checkIfUnmodifiedSince, setLastEditedBy],
     afterChange: [updateTranslationSearchVector],
   },
   fields: [
@@ -36,6 +37,16 @@ export const Translations: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       hasMany: false,
+    },
+    {
+      name: 'lastEditedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: false,
+      admin: {
+        readOnly: true,
+        description: 'Auto-set on every save.',
+      },
     },
   ],
 }

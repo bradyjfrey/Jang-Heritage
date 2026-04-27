@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { checkIfUnmodifiedSince } from '../hooks/checkIfUnmodifiedSince'
 import { segmentChinese } from '../hooks/segmentChinese'
+import { setLastEditedBy } from '../hooks/setLastEditedBy'
 import { stripMarkdown } from '../hooks/stripMarkdown'
 import { updateDocumentBodySearchVector } from '../hooks/updateSearchVector'
 
@@ -30,6 +31,7 @@ export const Documents: CollectionConfig = {
     afterChange: [updateDocumentBodySearchVector],
     beforeChange: [
       checkIfUnmodifiedSince,
+      setLastEditedBy,
       async ({ data, operation }) => {
         // For note-type documents on create, default the date to today and
         // precision to 'day'. Notes record when they were written, not the
@@ -181,6 +183,17 @@ export const Documents: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Backlink for records ported from Catalogit.',
+      },
+    },
+    {
+      name: 'lastEditedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: false,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Auto-set on every save.',
       },
     },
   ],
