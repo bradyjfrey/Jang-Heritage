@@ -7,11 +7,12 @@ type Props = {
   total: number
   sort: string
   per: number
+  view: 'grid' | 'table'
 }
 
-// Sort + per-page controls in the list header. Like the filter sidebar,
-// pushes new URL params on change.
-export function ListControls({ total, sort, per }: Props) {
+// Sort, per-page, and view-mode controls in the list header. Like the
+// filter sidebar, pushes new URL params on change.
+export function ListControls({ total, sort, per, view }: Props) {
   const router = useRouter()
   const params = useSearchParams()
 
@@ -55,6 +56,32 @@ export function ListControls({ total, sort, per }: Props) {
           <option value="48">48 per page</option>
           <option value="96">96 per page</option>
         </select>
+        <div className="flex border border-[color:var(--border-soft)] rounded-md overflow-hidden">
+          <button
+            type="button"
+            onClick={() => update('view', null)}
+            className={
+              view === 'grid'
+                ? 'px-3 py-1.5 bg-seal/10 text-seal text-sm'
+                : 'px-3 py-1.5 text-ink-soft hover:bg-paper-warm text-sm'
+            }
+            aria-pressed={view === 'grid'}
+          >
+            Grid
+          </button>
+          <button
+            type="button"
+            onClick={() => update('view', 'table')}
+            className={
+              view === 'table'
+                ? 'px-3 py-1.5 bg-seal/10 text-seal text-sm'
+                : 'px-3 py-1.5 text-ink-soft hover:bg-paper-warm text-sm'
+            }
+            aria-pressed={view === 'table'}
+          >
+            Table
+          </button>
+        </div>
       </div>
     </div>
   )

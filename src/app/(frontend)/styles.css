@@ -153,6 +153,17 @@ mark.snippet {
   pointer-events: none;
 }
 
+/* Tiny variant for table-row thumbnails: only the watermark glyph,
+   centered, slightly heavier opacity, no Note label. */
+.note-card-bg.thumb::before {
+  font-size: 1.5rem;
+  transform: translate(-50%, -50%);
+  opacity: 0.4;
+}
+.note-card-bg.thumb::after {
+  display: none;
+}
+
 /* Save status pill (used in the editor header) */
 .save-status {
   font-size: 0.75rem;

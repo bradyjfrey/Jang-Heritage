@@ -7,7 +7,7 @@ import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
 import { FilterSidebar } from '@/components/List/FilterSidebar'
 import { ListControls } from '@/components/List/ListControls'
-import type { Document, Media } from '@/payload-types'
+import type { Document, Media, Tag } from '@/payload-types'
 
 const ALL_TYPES = [
   'letter',
@@ -24,6 +24,60 @@ type SearchParams = {
   sort?: string
   per?: string
   page?: string
+  view?: string
+}
+
+type ViewMode = 'grid' | 'table'
+
+function parseView(value: string | undefined): ViewMode {
+  return value === 'table' ? 'table' : 'grid'
+}
+
+function relativeTime(iso: string | undefined): string {
+  if (!iso) return ''
+  const ms = Date.now() - new Date(iso).getTime()
+  if (Number.isNaN(ms)) return ''
+  const seconds = Math.floor(ms / 1000)
+  if (seconds < 60) return 'just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return 'yesterday'
+  if (days < 7) return `${days}d ago`
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+function formatDocDate(
+  iso: string | null | undefined,
+  precision: string | null | undefined,
+): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  switch (precision) {
+    case 'day':
+      return d.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    case 'month':
+      return d.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+      })
+    case 'year':
+      return String(d.getFullYear())
+    case 'decade':
+      return `${Math.floor(d.getFullYear() / 10) * 10}s`
+    default:
+      return d.toLocaleDateString()
+  }
 }
 
 function parseTypes(value: string | undefined): ReadonlyArray<DocType> {
@@ -75,6 +129,7 @@ export default async function ListPage({
   const sort = payloadSort(params.sort)
   const limit = parsePerPage(params.per)
   const page = parsePage(params.page)
+  const view = parseView(params.view)
 
   const result = await payload.find({
     collection: 'documents',
@@ -111,12 +166,15 @@ export default async function ListPage({
             total={result.totalDocs}
             sort={params.sort || 'recent'}
             per={limit}
+            view={view}
           />
 
           {result.docs.length === 0 ? (
             <div className="text-ink-soft text-sm py-12 text-center">
               No documents match the current filters.
             </div>
+          ) : view === 'table' ? (
+            <TableView docs={result.docs} />
           ) : (
             <div className="grid grid-cols-6 gap-2">
               {result.docs.map((doc) => (
@@ -133,6 +191,85 @@ export default async function ListPage({
         </main>
       </div>
     </>
+  )
+}
+
+function TableView({ docs }: { docs: Document[] }) {
+  return (
+    <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg overflow-hidden">
+      <table className="w-full text-sm">
+        <thead className="bg-paper-warm border-b border-[color:var(--border-soft)] text-ink-soft">
+          <tr className="text-left">
+            <th className="px-3 py-2.5 w-14"></th>
+            <th className="px-3 py-2.5 font-medium">Title</th>
+            <th className="px-3 py-2.5 font-medium w-24">Type</th>
+            <th className="px-3 py-2.5 font-medium w-32">Date</th>
+            <th className="px-3 py-2.5 font-medium w-64">Tags</th>
+            <th className="px-3 py-2.5 font-medium w-28">Updated</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[color:var(--border-soft)]">
+          {docs.map((doc) => (
+            <TableRow key={doc.id} doc={doc} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function TableRow({ doc }: { doc: Document }) {
+  const isNote = doc.documentType === 'note'
+  const scans = (Array.isArray(doc.scans) ? doc.scans : []).filter(
+    (s): s is Media => typeof s === 'object' && s !== null,
+  )
+  const firstScan = scans[0]
+  const tags = (Array.isArray(doc.tags) ? doc.tags : []).filter(
+    (t): t is Tag => typeof t === 'object' && t !== null,
+  )
+  const docDate = formatDocDate(doc.dateOriginal, doc.dateOriginalPrecision)
+  const updated = relativeTime(doc.updatedAt)
+
+  return (
+    <tr className="hover:bg-paper-warm">
+      <td className="px-3 py-2">
+        <Link
+          href={`/doc/${doc.id}`}
+          className="block w-10 h-12 rounded overflow-hidden border border-[color:var(--border-soft)] relative"
+          aria-label={`Open ${doc.title}`}
+        >
+          {!isNote && firstScan?.url ? (
+            <img
+              src={firstScan.url}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <div className="note-card-bg thumb"></div>
+          )}
+        </Link>
+      </td>
+      <td className="px-3 py-2 font-serif-content text-base">
+        <Link href={`/doc/${doc.id}`} className="hover:text-seal">
+          {doc.title}
+        </Link>
+      </td>
+      <td className="px-3 py-2 text-ink-soft">{doc.documentType}</td>
+      <td className="px-3 py-2 text-ink-soft">{docDate}</td>
+      <td className="px-3 py-2">
+        <div className="flex flex-wrap gap-1 items-center">
+          {tags.slice(0, 3).map((tag) => (
+            <span key={tag.id} className="chip">
+              {tag.name}
+            </span>
+          ))}
+          {tags.length > 3 ? (
+            <span className="text-xs text-ink-faint">+{tags.length - 3} more</span>
+          ) : null}
+        </div>
+      </td>
+      <td className="px-3 py-2 text-ink-soft">{updated}</td>
+    </tr>
   )
 }
 
@@ -184,6 +321,7 @@ function Pagination({
   if (params.type) baseQuery.set('type', params.type)
   if (params.sort) baseQuery.set('sort', params.sort)
   if (params.per) baseQuery.set('per', params.per)
+  if (params.view) baseQuery.set('view', params.view)
 
   const linkFor = (p: number) => {
     const q = new URLSearchParams(baseQuery)
