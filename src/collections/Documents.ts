@@ -26,7 +26,19 @@ export const Documents: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      async ({ data }) => {
+      async ({ data, operation }) => {
+        // For note-type documents on create, default the date to today and
+        // precision to 'day'. Notes record when they were written, not the
+        // underlying source date, so today is the right default. User can
+        // still override before saving.
+        if (operation === 'create' && data.documentType === 'note') {
+          if (!data.dateOriginal) {
+            data.dateOriginal = new Date().toISOString()
+          }
+          if (!data.dateOriginalPrecision || data.dateOriginalPrecision === 'unknown') {
+            data.dateOriginalPrecision = 'day'
+          }
+        }
         // For note-type documents, re-derive bodySegmented on every save:
         // strip markdown syntax so it doesn't pollute the index, then run
         // nodejieba so embedded Chinese is searchable. Other types skip.
@@ -129,6 +141,17 @@ export const Documents: CollectionConfig = {
       admin: {
         condition: isNotNote,
         description: 'Image scans, ordered by upload (drag to reorder).',
+      },
+    },
+    {
+      name: 'attachments',
+      type: 'upload',
+      relationTo: 'media',
+      hasMany: true,
+      admin: {
+        condition: isNote,
+        description:
+          'Supporting files for this note: screenshots, PDFs, photos, anything relevant.',
       },
     },
     {
