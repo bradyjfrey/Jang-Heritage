@@ -1,6 +1,10 @@
 { pkgs, ... }:
 
 {
+  # Load .env automatically so commands run inside the devenv shell
+  # see DATABASE_URL, PAYLOAD_SECRET, etc. (Next.js also reads .env on its own.)
+  dotenv.enable = true;
+
   # Node 24 LTS + pnpm, scoped to this project.
   # System Node 25 (claude-code, netlify-cli) is unaffected.
   languages.javascript.enable = true;
