@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isAdmin, isAuthed, isEditorOrAdmin } from '../access/byRole'
 
 const slugify = (input: string) =>
   String(input)
@@ -12,6 +13,12 @@ export const Tags: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'parent'],
+  },
+  access: {
+    read: isAuthed,
+    create: isEditorOrAdmin,
+    update: isEditorOrAdmin,
+    delete: isAdmin,
   },
   fields: [
     {

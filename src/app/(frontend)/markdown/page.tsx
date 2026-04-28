@@ -120,16 +120,7 @@ export default async function MarkdownReferencePage() {
 
   return (
     <>
-      <Chrome
-        user={user}
-        below={{
-          type: 'breadcrumb',
-          items: [
-            { label: 'Home', href: '/' },
-            { label: 'Markdown reference' },
-          ],
-        }}
-      />
+      <Chrome user={user} />
 
       <main className="max-w-5xl mx-auto px-8 py-10">
         <div className="mb-8">

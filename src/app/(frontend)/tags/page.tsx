@@ -43,7 +43,7 @@ export default async function TagsPage() {
 
   return (
     <>
-      <Chrome user={user} below={{ type: 'nav', active: 'tags' }} />
+      <Chrome user={user} />
 
       <main className="max-w-5xl mx-auto px-8 py-10">
         <div className="mb-6">

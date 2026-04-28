@@ -1,5 +1,6 @@
 import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
 import { JWTAuthentication } from 'payload'
+import { isAdmin, isAuthed } from '../access/byRole'
 
 // Send a one-shot invite email when a new login-capable user is created.
 // No tokens, no expiry: the allowlist + Google SSO are the security boundary.
@@ -56,6 +57,17 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'email', 'role', 'kind'],
+  },
+  access: {
+    // Only admins can open /admin. Editors and viewers do all their work
+    // through the frontend; this hides the admin UI from them entirely.
+    admin: ({ req: { user } }) => user?.role === 'admin',
+    // Any signed-in user can read user records (needed for People dropdowns
+    // and similar UI). Only admins can mutate.
+    read: isAuthed,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
   },
   auth: {
     disableLocalStrategy: true,

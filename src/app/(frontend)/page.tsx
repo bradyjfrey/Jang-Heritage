@@ -113,7 +113,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Chrome user={user} below={{ type: 'nav', active: 'home' }} />
+      <Chrome user={user} active="home" />
 
       <main className="px-10 py-10 max-w-6xl mx-auto">
         <div className="mb-10">
@@ -130,12 +130,12 @@ export default async function HomePage() {
           <StatCard
             label="Transcribed"
             value={`${transcribedCount.totalDocs}`}
-            secondary={`/ ${totalDocs.totalDocs}`}
+            secondary={`/ ${translatableDocsCount.totalDocs}`}
           />
           <StatCard
             label="Translated"
             value={`${translatedCount.totalDocs}`}
-            secondary={`/ ${totalDocs.totalDocs}`}
+            secondary={`/ ${translatableDocsCount.totalDocs}`}
           />
           <StatCard
             label="Last edit"
@@ -199,7 +199,10 @@ function StatCard({
   footer?: string
 }) {
   return (
-    <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+    <div
+      className="border border-[color:var(--border-soft)] rounded-lg p-5"
+      style={{ background: 'var(--border-soft)' }}
+    >
       <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-2">
         {label}
       </div>
@@ -225,7 +228,8 @@ function RecentCard({ doc }: { doc: Document }) {
   return (
     <Link
       href={`/doc/${doc.id}`}
-      className="block bg-surface border border-[color:var(--border-soft)] rounded-lg overflow-hidden hover:border-gold transition"
+      className="block rounded-lg overflow-hidden border border-[color:var(--border-soft)] hover:ring-2 hover:ring-gold transition"
+      title={doc.title}
     >
       <div className="h-44 relative">
         {showImage ? (
@@ -238,13 +242,13 @@ function RecentCard({ doc }: { doc: Document }) {
           <div className="note-card-bg"></div>
         )}
       </div>
-      <div className="p-4">
-        <div className="font-serif-content text-base mb-1 line-clamp-1">
+      <div className="bg-seal p-4">
+        <div className="font-serif-content text-base mb-1 line-clamp-1 text-white">
           {doc.title}
         </div>
-        <div className="text-xs text-ink-soft">
+        <div className="text-xs text-white/85">
           {relativeTime(doc.updatedAt)} ·{' '}
-          <span className="font-medium text-ink">{doc.documentType}</span>
+          <span className="font-medium text-white">{doc.documentType}</span>
         </div>
       </div>
     </Link>

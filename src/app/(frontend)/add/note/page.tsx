@@ -14,6 +14,7 @@ export default async function AddNotePage() {
   const headers = await getHeaders()
   const { user } = await payload.auth({ headers })
   if (!user) redirect('/login?redirect=/add/note')
+  if (user.role !== 'admin' && user.role !== 'editor') redirect('/access-denied')
 
   return <NoteEditor document={null} user={user} />
 }

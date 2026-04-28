@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isAdmin, isAuthed, isEditorOrAdmin } from '../access/byRole'
 import { checkIfUnmodifiedSince } from '../hooks/checkIfUnmodifiedSince'
 import { segmentChinese } from '../hooks/segmentChinese'
 import { setLastEditedBy } from '../hooks/setLastEditedBy'
@@ -23,9 +24,26 @@ export const Documents: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'documentType', 'dateOriginal', 'updatedAt'],
+    // Fields the admin search box (and relationship picker) match against.
+    // Text fields only — `documentType` is a Postgres enum and ILIKE fails
+    // against it. Type filtering is handled via the column filter, not
+    // free-text search.
+    listSearchableFields: [
+      'title',
+      'sender',
+      'recipient',
+      'originLocation',
+      'destinationLocation',
+    ],
+  },
+  access: {
+    read: isAuthed,
+    create: isEditorOrAdmin,
+    update: isEditorOrAdmin,
+    delete: isAdmin,
   },
   versions: {
-    maxPerDoc: 50,
+    maxPerDoc: 20,
   },
   hooks: {
     afterChange: [updateDocumentBodySearchVector],

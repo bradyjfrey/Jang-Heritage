@@ -20,19 +20,11 @@ export default async function AddPage() {
   const headers = await getHeaders()
   const { user } = await payload.auth({ headers })
   if (!user) redirect('/login?redirect=/add')
+  if (user.role !== 'admin' && user.role !== 'editor') redirect('/access-denied')
 
   return (
     <>
-      <Chrome
-        user={user}
-        below={{
-          type: 'breadcrumb',
-          items: [
-            { label: 'Home', href: '/' },
-            { label: 'New scan' },
-          ],
-        }}
-      />
+      <Chrome user={user} active="scans" />
       <main className="max-w-3xl mx-auto px-8 py-12">
         <div className="mb-8 text-center">
           <h1 className="font-serif-content text-3xl mb-2">New scan</h1>

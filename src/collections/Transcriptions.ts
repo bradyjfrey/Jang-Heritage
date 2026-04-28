@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isAdmin, isAuthed, isEditorOrAdmin } from '../access/byRole'
 import { checkIfUnmodifiedSince } from '../hooks/checkIfUnmodifiedSince'
 import { segmentChinese } from '../hooks/segmentChinese'
 import { setLastEditedBy } from '../hooks/setLastEditedBy'
@@ -9,9 +10,16 @@ export const Transcriptions: CollectionConfig = {
   admin: {
     useAsTitle: 'document',
     defaultColumns: ['document', 'transcriber', 'updatedAt'],
+    listSearchableFields: ['text'],
+  },
+  access: {
+    read: isAuthed,
+    create: isEditorOrAdmin,
+    update: isEditorOrAdmin,
+    delete: isAdmin,
   },
   versions: {
-    maxPerDoc: 50,
+    maxPerDoc: 20,
   },
   hooks: {
     beforeChange: [

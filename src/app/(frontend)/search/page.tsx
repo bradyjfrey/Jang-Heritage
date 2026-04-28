@@ -526,7 +526,7 @@ export default async function SearchPage({
 
   return (
     <>
-      <Chrome user={user} below={{ type: 'nav' }} />
+      <Chrome user={user} />
 
       {!rawQuery ? (
         <main className="max-w-5xl mx-auto px-8 py-10">

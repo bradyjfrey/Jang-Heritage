@@ -7,10 +7,15 @@ import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
 import { CopyButton } from '@/components/CopyButton/CopyButton'
 import { NoteBody } from '@/components/NoteBody/NoteBody'
+import { DetailsEditor } from '@/components/DocumentView/DetailsEditor'
+import { HistoryTimeline } from '@/components/DocumentView/HistoryTimeline'
+import { PeopleEditor } from '@/components/DocumentView/PeopleEditor'
 import { PinButton } from '@/components/DocumentView/PinButton'
 import { ScanViewer } from '@/components/DocumentView/ScanViewer'
 import { TagEditor } from '@/components/DocumentView/TagEditor'
 import type { Media, Tag, User } from '@/payload-types'
+
+const HISTORY_LIMIT = 5
 
 function formatDate(
   iso: string | null | undefined,
@@ -85,22 +90,141 @@ export default async function DocumentPage({
     .catch(() => null)
   if (!doc) notFound()
 
-  const [transcriptions, translations] = await Promise.all([
-    payload.find({
-      collection: 'transcriptions',
-      where: { document: { equals: docId } },
-      limit: 1,
-      depth: 1,
-    }),
-    payload.find({
-      collection: 'translations',
-      where: { document: { equals: docId } },
-      limit: 1,
-      depth: 1,
-    }),
-  ])
+  const [transcriptions, translations, transcribersList, translatorsList] =
+    await Promise.all([
+      payload.find({
+        collection: 'transcriptions',
+        where: { document: { equals: docId } },
+        limit: 1,
+        depth: 1,
+      }),
+      payload.find({
+        collection: 'translations',
+        where: { document: { equals: docId } },
+        limit: 1,
+        depth: 1,
+      }),
+      payload.find({
+        collection: 'users',
+        where: { isTranscriber: { equals: true } },
+        limit: 50,
+        sort: 'displayName',
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'users',
+        where: { isTranslator: { equals: true } },
+        limit: 50,
+        sort: 'displayName',
+        depth: 0,
+      }),
+    ])
   const transcription = transcriptions.docs[0]
   const translation = translations.docs[0]
+
+  // Pull versions for the doc and (when present) its transcription /
+  // translation. Merge into a single timeline; cap at HISTORY_LIMIT for the
+  // sidebar and surface the rest count as "+ N earlier edits".
+  const [docVersions, transcriptionVersions, translationVersions] =
+    await Promise.all([
+      payload.findVersions({
+        collection: 'documents',
+        where: { parent: { equals: docId } },
+        sort: '-updatedAt',
+        limit: HISTORY_LIMIT * 3,
+        depth: 1,
+      }),
+      transcription
+        ? payload.findVersions({
+            collection: 'transcriptions',
+            where: { parent: { equals: transcription.id } },
+            sort: '-updatedAt',
+            limit: HISTORY_LIMIT * 3,
+            depth: 1,
+          })
+        : Promise.resolve({ docs: [], totalDocs: 0 } as { docs: unknown[]; totalDocs: number }),
+      translation
+        ? payload.findVersions({
+            collection: 'translations',
+            where: { parent: { equals: translation.id } },
+            sort: '-updatedAt',
+            limit: HISTORY_LIMIT * 3,
+            depth: 1,
+          })
+        : Promise.resolve({ docs: [], totalDocs: 0 } as { docs: unknown[]; totalDocs: number }),
+    ])
+
+  type AnyVersion = {
+    id: string | number
+    parent: unknown
+    createdAt?: string
+    updatedAt?: string
+    version?: { lastEditedBy?: unknown }
+  }
+  function buildEntries(
+    rows: { docs: unknown[] },
+    collection: 'documents' | 'transcriptions' | 'translations',
+    label: 'Document' | 'Transcription' | 'Translation',
+  ) {
+    const docs = rows.docs as AnyVersion[]
+    // Payload returns newest first when sorted by -updatedAt. Number them
+    // from the total down so the most recent version has the highest v#.
+    return docs.map((row, i) => {
+      const total = docs.length
+      const versionNumber = total - i
+      const editor = row.version?.lastEditedBy
+      const editorLabel = userLabel(editor)
+      return {
+        key: `${collection}-${row.id}`,
+        collectionLabel: label,
+        versionNumber,
+        createdAt: row.updatedAt || row.createdAt || '',
+        editor: editorLabel || null,
+      } as const
+    })
+  }
+
+  const allEntries = [
+    ...buildEntries(docVersions, 'documents', 'Document'),
+    ...(transcription
+      ? buildEntries(transcriptionVersions, 'transcriptions', 'Transcription')
+      : []),
+    ...(translation
+      ? buildEntries(translationVersions, 'translations', 'Translation')
+      : []),
+  ].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
+
+  const transcriberOptions = transcribersList.docs.map((u: User) => ({
+    id: u.id,
+    label: u.displayName || u.email || `User ${u.id}`,
+  }))
+  const translatorOptions = translatorsList.docs.map((u: User) => ({
+    id: u.id,
+    label: u.displayName || u.email || `User ${u.id}`,
+  }))
+
+  const transcriptionRow = transcription
+    ? {
+        id: transcription.id,
+        collection: 'transcriptions' as const,
+        currentUserId:
+          typeof transcription.transcriber === 'number'
+            ? transcription.transcriber
+            : transcription.transcriber?.id ?? null,
+        updatedAt: transcription.updatedAt,
+      }
+    : null
+  const translationRow = translation
+    ? {
+        id: translation.id,
+        collection: 'translations' as const,
+        currentUserId:
+          typeof translation.translator === 'number'
+            ? translation.translator
+            : translation.translator?.id ?? null,
+        updatedAt: translation.updatedAt,
+      }
+    : null
 
   const scans = (Array.isArray(doc.scans) ? doc.scans : []).filter(
     (s): s is Media => typeof s === 'object' && s !== null,
@@ -111,6 +235,7 @@ export default async function DocumentPage({
 
   const dateLabel = formatDate(doc.dateOriginal, doc.dateOriginalPrecision)
   const isNote = doc.documentType === 'note'
+  const canEdit = user.role === 'admin' || user.role === 'editor'
 
   // Prefer lastEditedBy (auto-stamped on every save). Fall back to the
   // semantic transcriber/translator field for rows saved before the
@@ -128,17 +253,7 @@ export default async function DocumentPage({
 
   return (
     <>
-      <Chrome
-        user={user}
-        below={{
-          type: 'breadcrumb',
-          items: [
-            { label: 'Home', href: '/' },
-            { label: 'Documents', href: '/list' },
-            { label: doc.title },
-          ],
-        }}
-      />
+      <Chrome user={user} active={isNote ? 'notes' : 'scans'} />
 
       <main className="max-w-7xl mx-auto px-8 py-10 grid grid-cols-[1fr_18rem] gap-10">
         <div>
@@ -243,44 +358,61 @@ export default async function DocumentPage({
         </div>
 
         <aside className="space-y-6">
-          <Link
-            href={`/doc/${doc.id}/edit`}
-            className="block w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors"
-          >
-            {isNote ? 'Edit note' : 'Edit transcription & translation'}
-          </Link>
+          {canEdit ? (
+            <Link
+              href={`/doc/${doc.id}/edit`}
+              className="block w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors"
+            >
+              {isNote ? 'Edit Note' : 'Edit Scan'}
+            </Link>
+          ) : null}
 
-          <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
-            <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-3">
-              Details
-            </div>
-            <div className="space-y-3 text-sm">
-              <div>
-                <span className="text-xs text-ink-faint block">Type</span>
-                <div>{doc.documentType}</div>
-              </div>
-              {dateLabel ? (
-                <div>
-                  <span className="text-xs text-ink-faint block">Date</span>
-                  <div>{dateLabel}</div>
-                </div>
-              ) : null}
-              {!isNote && scans.length > 0 ? (
-                <div className="flex justify-between gap-4 pt-1 text-ink-soft">
-                  <span>Scans</span>
-                  <span>
-                    {scans.length} page{scans.length === 1 ? '' : 's'}
-                  </span>
-                </div>
-              ) : null}
-            </div>
-          </section>
+          <DetailsEditor
+            documentId={doc.id}
+            initialUpdatedAt={doc.updatedAt}
+            documentType={doc.documentType}
+            dateOriginal={doc.dateOriginal}
+            dateOriginalPrecision={doc.dateOriginalPrecision}
+            scanCount={scans.length}
+            canEdit={canEdit}
+          />
 
           <TagEditor
             documentId={doc.id}
             initialTags={tags}
             initialUpdatedAt={doc.updatedAt}
+            canEdit={canEdit}
           />
+
+          {isNote && noteEditorName ? (
+            <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+              <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-3">
+                Author
+              </div>
+              <div className="text-sm text-ink-soft">{noteEditorName}</div>
+            </section>
+          ) : null}
+
+          {!isNote ? (
+            <PeopleEditor
+              transcription={transcriptionRow}
+              translation={translationRow}
+              transcribers={transcriberOptions}
+              translators={translatorOptions}
+              canEdit={canEdit}
+              transcriberName={transcriberName || null}
+              translatorName={translatorName || null}
+            />
+          ) : null}
+
+          <HistoryTimeline entries={allEntries} collapsedLimit={HISTORY_LIMIT} />
+
+          <a
+            href={`/api/documents/${doc.id}/export`}
+            className="block w-full bg-paper-warm hover:bg-seal border border-[color:var(--border-soft)] hover:border-seal rounded-lg p-3 text-sm font-bold text-ink-soft hover:text-white text-center transition-colors"
+          >
+            ⤓ Export Bundle (zip)
+          </a>
         </aside>
       </main>
     </>

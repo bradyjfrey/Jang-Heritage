@@ -273,7 +273,10 @@ export default async function ListPage({
 
   return (
     <>
-      <Chrome user={user} below={{ type: 'nav', active: 'documents' }} />
+      <Chrome
+        user={user}
+        active={types.length === 1 && types[0] === 'note' ? 'notes' : 'scans'}
+      />
 
       <div className="flex">
         <FilterSidebar

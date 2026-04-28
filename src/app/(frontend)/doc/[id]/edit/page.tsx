@@ -25,6 +25,9 @@ export default async function EditPage({
     const next = encodeURIComponent(`/doc/${docId}/edit`)
     redirect(`/login?redirect=${next}`)
   }
+  if (user.role !== 'admin' && user.role !== 'editor') {
+    redirect(`/doc/${docId}`)
+  }
 
   const doc = await payload
     .findByID({ collection: 'documents', id: docId, depth: 2 })

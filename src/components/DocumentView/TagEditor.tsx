@@ -8,6 +8,7 @@ type Props = {
   documentId: number
   initialTags: Tag[]
   initialUpdatedAt: string
+  canEdit?: boolean
 }
 
 type SaveStatus = 'idle' | 'saving' | 'error' | 'conflict'
@@ -18,7 +19,12 @@ type SaveStatus = 'idle' | 'saving' | 'error' | 'conflict'
 //
 // Saves are PATCH /api/documents/<id> with the updated tag-id array, gated
 // by X-If-Unmodified-Since so a stale tab loses the race instead of clobbering.
-export function TagEditor({ documentId, initialTags, initialUpdatedAt }: Props) {
+export function TagEditor({
+  documentId,
+  initialTags,
+  initialUpdatedAt,
+  canEdit = true,
+}: Props) {
   const router = useRouter()
   const [tags, setTags] = useState<Tag[]>(initialTags)
   const [updatedAt, setUpdatedAt] = useState(initialUpdatedAt)
@@ -87,7 +93,10 @@ export function TagEditor({ documentId, initialTags, initialUpdatedAt }: Props) 
         setStatus('conflict')
         return
       }
-      if (!res.ok) throw new Error(`PATCH failed: ${res.status}`)
+      if (!res.ok) {
+        setStatus('error')
+        return
+      }
       const json = await res.json()
       const updated = json?.doc ?? json
       if (updated?.updatedAt) setUpdatedAt(updated.updatedAt)
@@ -163,6 +172,36 @@ export function TagEditor({ documentId, initialTags, initialUpdatedAt }: Props) 
       setQuery('')
       setOpen(false)
     }
+  }
+
+  if (!canEdit) {
+    if (tags.length === 0) return null
+    return (
+      <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+        <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-3">
+          Tags
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <span
+              key={tag.id}
+              className="chip"
+              style={
+                tag.color
+                  ? {
+                      background: `${tag.color}1f`,
+                      color: tag.color,
+                      borderColor: `${tag.color}40`,
+                    }
+                  : undefined
+              }
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      </section>
+    )
   }
 
   return (
