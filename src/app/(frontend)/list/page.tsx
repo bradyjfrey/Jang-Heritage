@@ -1,7 +1,7 @@
 import { headers as getHeaders } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { getPayload } from 'payload'
+import { getPayload, type Where } from 'payload'
 
 import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
@@ -25,6 +25,7 @@ type SearchParams = {
   per?: string
   page?: string
   view?: string
+  tag?: string
 }
 
 type ViewMode = 'grid' | 'table'
@@ -130,15 +131,43 @@ export default async function ListPage({
   const limit = parsePerPage(params.per)
   const page = parsePage(params.page)
   const view = parseView(params.view)
+  const tagSlug = params.tag?.trim() || ''
 
-  const result = await payload.find({
-    collection: 'documents',
-    where: { documentType: { in: [...types] } },
-    sort,
-    limit,
-    page,
-    depth: 1,
-  })
+  // Resolve ?tag=<slug> to a tag id so we can filter the relationship.
+  // If the slug doesn't match anything we still render an empty list with
+  // the chip showing the requested slug, so the user can see + clear it.
+  let activeTag: { id: number; name: string; slug: string } | null = null
+  if (tagSlug) {
+    const found = await payload.find({
+      collection: 'tags',
+      where: { slug: { equals: tagSlug } },
+      limit: 1,
+      depth: 0,
+    })
+    const t = found.docs[0]
+    if (t) activeTag = { id: t.id, name: t.name, slug: t.slug || tagSlug }
+  }
+
+  const where: Where = activeTag
+    ? {
+        and: [
+          { documentType: { in: [...types] } },
+          { tags: { in: [activeTag.id] } },
+        ],
+      }
+    : { documentType: { in: [...types] } }
+
+  const result = activeTag === null && tagSlug
+    ? // Slug provided but unresolved → render empty result without querying.
+      { docs: [], totalDocs: 0, totalPages: 1 }
+    : await payload.find({
+        collection: 'documents',
+        where,
+        sort,
+        limit,
+        page,
+        depth: 1,
+      })
 
   // Counts per type for the sidebar. Cheap at our scale; revisit if it
   // gets slow once we have thousands of docs.
@@ -167,6 +196,13 @@ export default async function ListPage({
             sort={params.sort || 'recent'}
             per={limit}
             view={view}
+            activeTag={
+              activeTag
+                ? { name: activeTag.name }
+                : tagSlug
+                  ? { name: tagSlug }
+                  : null
+            }
           />
 
           {result.docs.length === 0 ? (
@@ -322,6 +358,7 @@ function Pagination({
   if (params.sort) baseQuery.set('sort', params.sort)
   if (params.per) baseQuery.set('per', params.per)
   if (params.view) baseQuery.set('view', params.view)
+  if (params.tag) baseQuery.set('tag', params.tag)
 
   const linkFor = (p: number) => {
     const q = new URLSearchParams(baseQuery)

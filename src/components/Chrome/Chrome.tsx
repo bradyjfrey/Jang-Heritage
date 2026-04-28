@@ -41,7 +41,7 @@ export function Chrome({ user, below }: Props) {
         <div className="flex-1 max-w-xl">
           <SearchBar />
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 ml-auto">
           <div
             className="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium"
             title={user.displayName || user.email || ''}

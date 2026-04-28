@@ -8,11 +8,12 @@ type Props = {
   sort: string
   per: number
   view: 'grid' | 'table'
+  activeTag?: { name: string } | null
 }
 
 // Sort, per-page, and view-mode controls in the list header. Like the
 // filter sidebar, pushes new URL params on change.
-export function ListControls({ total, sort, per, view }: Props) {
+export function ListControls({ total, sort, per, view, activeTag }: Props) {
   const router = useRouter()
   const params = useSearchParams()
 
@@ -35,6 +36,19 @@ export function ListControls({ total, sort, per, view }: Props) {
         <p className="text-sm text-ink-soft">
           {total === 1 ? '1 entry' : `${total} entries`}
         </p>
+        {activeTag ? (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-xs text-ink-soft">Tagged:</span>
+            <span className="chip">{activeTag.name}</span>
+            <button
+              type="button"
+              onClick={() => update('tag', null)}
+              className="text-xs text-seal hover:underline"
+            >
+              clear
+            </button>
+          </div>
+        ) : null}
       </div>
       <div className="flex items-center gap-2">
         <select

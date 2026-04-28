@@ -9,6 +9,7 @@ import { CopyButton } from '@/components/CopyButton/CopyButton'
 import { NoteBody } from '@/components/NoteBody/NoteBody'
 import { PinButton } from '@/components/DocumentView/PinButton'
 import { ScanViewer } from '@/components/DocumentView/ScanViewer'
+import { TagEditor } from '@/components/DocumentView/TagEditor'
 import type { Media, Tag, User } from '@/payload-types'
 
 function formatDate(
@@ -275,20 +276,11 @@ export default async function DocumentPage({
             </div>
           </section>
 
-          {tags.length > 0 ? (
-            <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
-              <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-3">
-                Tags
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {tags.map((tag) => (
-                  <span key={tag.id} className="chip">
-                    {tag.name}
-                  </span>
-                ))}
-              </div>
-            </section>
-          ) : null}
+          <TagEditor
+            documentId={doc.id}
+            initialTags={tags}
+            initialUpdatedAt={doc.updatedAt}
+          />
         </aside>
       </main>
     </>
