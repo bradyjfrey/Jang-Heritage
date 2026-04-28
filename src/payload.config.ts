@@ -36,10 +36,6 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL || '',
     },
     afterSchemaInit: [addSearchVectors],
-    // Auto-push schema on every startup. Default in production is false
-    // (Payload expects pre-generated migrations via `payload migrate`).
-    // We don't manage migration files for this project, so opt back in.
-    push: true,
   }),
   // Gmail SMTP (app password). Used by the Users afterChange hook to send
   // invite emails. Skipped entirely in build environments where SMTP_HOST
