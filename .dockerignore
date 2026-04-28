@@ -1,0 +1,44 @@
+# Things that should never end up in the Docker build context.
+.git
+.gitignore
+.github
+
+# Local Node + Next state — we reinstall and rebuild inside the image.
+node_modules
+.next
+out
+build
+
+# Dev environment management (Nix / direnv / devenv).
+.devenv
+.direnv
+.envrc
+devenv.nix
+devenv.yaml
+devenv.lock
+
+# Local Postgres backups.
+backups
+
+# Editor / OS noise.
+.DS_Store
+.idea
+.vscode
+*.swp
+
+# Local secrets — Dokploy injects production values via its env-vars panel.
+.env
+.env.local
+.env.*.local
+
+# Mockups never run in production.
+mockups
+
+# Log files.
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Docs that don't need to ship.
+README.md
+RUNBOOK.md

@@ -159,7 +159,7 @@ export default async function DocumentPage({
     parent: unknown
     createdAt?: string
     updatedAt?: string
-    version?: { lastEditedBy?: unknown }
+    version?: { lastEditedBy?: number | User | null }
   }
   function buildEntries(
     rows: { docs: unknown[] },

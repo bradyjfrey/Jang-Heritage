@@ -4,6 +4,9 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 
+// Admin pages must hit the live DB on every request; never prerender.
+export const dynamic = 'force-dynamic'
+
 // Gate /admin to role=admin. Non-admins land on a Jang-styled access-denied
 // page rather than Payload's stock no-access screen. Wraps Payload's
 // auto-generated admin pages without touching them.

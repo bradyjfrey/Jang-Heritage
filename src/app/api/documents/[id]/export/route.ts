@@ -133,8 +133,12 @@ export async function GET(
         new GetObjectCommand({ Bucket: bucket, Key: scan.filename }),
       )
       const body = obj.Body
+      // The AWS SDK types `Body` as a union (Node Readable | Web ReadableStream
+      // | Blob) so it can target multiple runtimes. In Node it's always a
+      // Node Readable — we runtime-check for `.pipe` and cast through unknown
+      // to the concrete Readable archiver expects.
       if (body && typeof (body as { pipe?: unknown }).pipe === 'function') {
-        archive.append(body as NodeJS.ReadableStream, {
+        archive.append(body as unknown as Readable, {
           name: `scans/${scan.filename}`,
         })
       }

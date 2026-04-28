@@ -6,6 +6,11 @@ export const metadata = {
   title: 'Jang Heritage',
 }
 
+// Every page reads the request cookie via payload.auth() — they must run on
+// each request, not be prerendered at build time. Without this Next tries
+// to statically generate them and crashes connecting to a placeholder DB.
+export const dynamic = 'force-dynamic'
+
 export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 

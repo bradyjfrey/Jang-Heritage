@@ -43,3 +43,4 @@ pnpm-debug.log*
 
 # Payload generated types
 src/payload-types.ts
+RUNBOOK.md
