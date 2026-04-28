@@ -8,9 +8,12 @@
 #   docker run --rm -p 3000:3000 --env-file .env jang-heritage
 
 ARG NODE_VERSION=24
+# Debian trixie (13) ships glibc 2.41. nodejieba's amd64 prebuilt requires
+# glibc 2.38, which bookworm-slim (Debian 12, glibc 2.36) doesn't have, so
+# trixie is the floor we need to avoid runtime "GLIBC_2.38 not found".
 
 ############# Stage 1: deps + native compile ###################################
-FROM node:${NODE_VERSION}-bookworm-slim AS deps
+FROM node:${NODE_VERSION}-trixie-slim AS deps
 WORKDIR /app
 
 # nodejieba needs python + g++ to compile the C++ binding. sharp prebuilds
@@ -31,7 +34,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts=false
 
 ############# Stage 2: build ###################################################
-FROM node:${NODE_VERSION}-bookworm-slim AS builder
+FROM node:${NODE_VERSION}-trixie-slim AS builder
 WORKDIR /app
 
 ENV PNPM_HOME=/pnpm
@@ -56,7 +59,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
 
 ############# Stage 3: runner ##################################################
-FROM node:${NODE_VERSION}-bookworm-slim AS runner
+FROM node:${NODE_VERSION}-trixie-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
