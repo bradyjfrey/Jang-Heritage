@@ -55,8 +55,13 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trigger Dokploy redeploy
-        if: success() && env.DOKPLOY_WEBHOOK != ''
+        if: success()
         env:
           DOKPLOY_WEBHOOK: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
         run: |
+          if [ -z "$DOKPLOY_WEBHOOK" ]; then
+            echo "DOKPLOY_WEBHOOK_URL secret not set — skipping redeploy trigger."
+            exit 0
+          fi
           curl -fsSL -X POST "$DOKPLOY_WEBHOOK"
+          echo "Redeploy webhook fired."
