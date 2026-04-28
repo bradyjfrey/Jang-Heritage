@@ -7,7 +7,7 @@ import { Chrome } from '@/components/Chrome/Chrome'
 import { ScanDropzone } from '@/components/AddEntry/ScanDropzone'
 
 export const metadata = {
-  title: 'New entry · Jang Heritage',
+  title: 'New scan · Jang Heritage',
 }
 
 // Themed quick-add for scan-bearing types (letter / diary / photo / article
@@ -29,13 +29,13 @@ export default async function AddPage() {
           type: 'breadcrumb',
           items: [
             { label: 'Home', href: '/' },
-            { label: 'New entry' },
+            { label: 'New scan' },
           ],
         }}
       />
       <main className="max-w-3xl mx-auto px-8 py-12">
         <div className="mb-8 text-center">
-          <h1 className="font-serif-content text-3xl mb-2">New entry</h1>
+          <h1 className="font-serif-content text-3xl mb-2">New scan</h1>
           <p className="text-ink-soft">
             Drop your scan to begin. You can add more scans, type a transcription
             and translation, and adjust metadata after.

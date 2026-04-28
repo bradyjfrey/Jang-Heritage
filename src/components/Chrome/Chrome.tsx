@@ -41,9 +41,21 @@ export function Chrome({ user, below }: Props) {
         <div className="flex-1 max-w-xl">
           <SearchBar />
         </div>
-        <div className="flex items-center gap-2 shrink-0 ml-auto">
+        <div className="flex items-center gap-3 shrink-0 ml-auto">
+          <Link
+            href="/add/note"
+            className="bg-surface border border-seal/40 text-seal px-3 py-1.5 rounded-md text-sm font-medium hover:bg-seal hover:text-white hover:border-seal inline-flex items-center gap-1.5 transition-colors"
+          >
+            <span className="text-base leading-none">+</span> New Note
+          </Link>
+          <Link
+            href="/add"
+            className="bg-seal text-white border border-seal px-3.5 py-1.5 rounded-md text-sm font-medium hover:bg-surface hover:text-seal inline-flex items-center gap-1.5 transition-colors"
+          >
+            <span className="text-base leading-none">+</span> New Scan
+          </Link>
           <div
-            className="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium"
+            className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-medium ml-2"
             title={user.displayName || user.email || ''}
           >
             {initial}

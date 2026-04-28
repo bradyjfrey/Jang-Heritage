@@ -36,6 +36,7 @@ export default async function HomePage() {
   // All counts + lists in parallel.
   const [
     totalDocs,
+    translatableDocsCount,
     transcribedCount,
     translatedCount,
     recentEdits,
@@ -43,6 +44,10 @@ export default async function HomePage() {
     pinnedResult,
   ] = await Promise.all([
     payload.count({ collection: 'documents' }),
+    payload.count({
+      collection: 'documents',
+      where: { documentType: { not_equals: 'note' } },
+    }),
     payload.count({
       collection: 'transcriptions',
       where: { text: { not_equals: '' } },
@@ -83,8 +88,13 @@ export default async function HomePage() {
     collection: 'documents',
     where:
       translatedDocIds.size > 0
-        ? { id: { not_in: [...translatedDocIds] } }
-        : {},
+        ? {
+            and: [
+              { id: { not_in: [...translatedDocIds] } },
+              { documentType: { not_equals: 'note' } },
+            ],
+          }
+        : { documentType: { not_equals: 'note' } },
     sort: '-updatedAt',
     limit: 4,
     depth: 0,
@@ -106,29 +116,13 @@ export default async function HomePage() {
       <Chrome user={user} below={{ type: 'nav', active: 'home' }} />
 
       <main className="px-10 py-10 max-w-6xl mx-auto">
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <h1 className="font-serif-content text-3xl mb-1">
-              Welcome back, {firstName}
-            </h1>
-            <p className="text-ink-soft">
-              Continue translating your archive.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/add/note"
-              className="bg-surface border border-seal/40 text-seal px-4 py-2.5 rounded-md font-medium hover:bg-seal hover:text-white hover:border-seal inline-flex items-center gap-2 transition-colors"
-            >
-              <span className="text-lg leading-none">+</span> New note
-            </Link>
-            <Link
-              href="/add"
-              className="bg-seal text-white px-5 py-2.5 rounded-md font-medium hover:bg-black inline-flex items-center gap-2 transition-colors"
-            >
-              <span className="text-lg leading-none">+</span> New entry
-            </Link>
-          </div>
+        <div className="mb-10">
+          <h1 className="font-serif-content text-3xl mb-1">
+            Welcome back, {firstName}
+          </h1>
+          <p className="text-ink-soft">
+            Continue translating your archive.
+          </p>
         </div>
 
         <div className="grid grid-cols-4 gap-4 mb-12">
@@ -152,7 +146,7 @@ export default async function HomePage() {
         </div>
 
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-serif-content text-xl">Recently edited</h2>
+          <h2 className="font-serif-content text-xl">Recently Edited</h2>
           <Link href="/list" className="text-sm text-seal hover:underline">
             View all →
           </Link>
@@ -169,7 +163,11 @@ export default async function HomePage() {
             <Link href="/add/note" className="text-seal underline">
               new note
             </Link>{' '}
-            or upload scans via the admin.
+            or{' '}
+            <Link href="/add" className="text-seal underline">
+              a scan
+            </Link>
+            .
           </div>
         )}
 
@@ -177,7 +175,7 @@ export default async function HomePage() {
           <NeedsTranslationCard
             docs={needsTranslationResult.docs}
             untranslatedCount={
-              totalDocs.totalDocs - translatedDocIds.size
+              translatableDocsCount.totalDocs - translatedDocIds.size
             }
           />
           <PinnedCard docs={pinnedResult.docs} />
@@ -263,7 +261,7 @@ function NeedsTranslationCard({
   return (
     <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-serif-content text-base">Needs translation</h3>
+        <h3 className="font-serif-content text-base">Needs Translation</h3>
         <span className="text-xs text-ink-soft">
           {untranslatedCount === 1
             ? '1 untranslated'

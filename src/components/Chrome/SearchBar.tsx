@@ -1,13 +1,23 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-// Global search input from the chrome bar. Submitting routes to /search?q=…
-// (the search page itself is built in a follow-up commit).
+// Global search input from the chrome bar. Submitting routes to /search?q=….
+// On /search the bar mirrors the current `q` so users see what they searched
+// (the Google pattern); on other pages it starts empty.
 export function SearchBar() {
   const router = useRouter()
-  const [q, setQ] = useState('')
+  const sp = useSearchParams()
+  const urlQ = sp.get('q') || ''
+  const [q, setQ] = useState(urlQ)
+
+  // Keep the input synced when the URL's q changes (e.g. user clicked a
+  // different result, hit back/forward, or used the Refine sidebar which
+  // preserves q in the URL).
+  useEffect(() => {
+    setQ(urlQ)
+  }, [urlQ])
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()

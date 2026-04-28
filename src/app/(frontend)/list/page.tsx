@@ -7,7 +7,7 @@ import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
 import { FilterSidebar } from '@/components/List/FilterSidebar'
 import { ListControls } from '@/components/List/ListControls'
-import type { Document, Media, Tag } from '@/payload-types'
+import type { Document, Media, Tag, User } from '@/payload-types'
 
 const ALL_TYPES = [
   'letter',
@@ -26,6 +26,16 @@ type SearchParams = {
   page?: string
   view?: string
   tag?: string
+  from?: string
+  to?: string
+  translator?: string
+}
+
+function parseYear(raw: string | undefined): number | null {
+  if (!raw) return null
+  const n = Number.parseInt(raw, 10)
+  if (!Number.isFinite(n) || n < 1 || n > 9999) return null
+  return n
 }
 
 type ViewMode = 'grid' | 'table'
@@ -132,6 +142,9 @@ export default async function ListPage({
   const page = parsePage(params.page)
   const view = parseView(params.view)
   const tagSlug = params.tag?.trim() || ''
+  const fromYear = parseYear(params.from)
+  const toYear = parseYear(params.to)
+  const translatorParam = (params.translator || '').trim()
 
   // Resolve ?tag=<slug> to a tag id so we can filter the relationship.
   // If the slug doesn't match anything we still render an empty list with
@@ -148,14 +161,76 @@ export default async function ListPage({
     if (t) activeTag = { id: t.id, name: t.name, slug: t.slug || tagSlug }
   }
 
-  const where: Where = activeTag
-    ? {
-        and: [
-          { documentType: { in: [...types] } },
-          { tags: { in: [activeTag.id] } },
-        ],
-      }
-    : { documentType: { in: [...types] } }
+  // Resolve translator filter to a list of document IDs (if specific
+  // translator) or a "not in translated" list (if Untranslated). We do this
+  // pre-pagination so totalPages stays accurate.
+  let translatorIdConstraint: Where | null = null
+  if (translatorParam === 'untranslated') {
+    const allTranslations = await payload.find({
+      collection: 'translations',
+      where: { text: { not_equals: '' } },
+      limit: 10000,
+      pagination: false,
+      depth: 0,
+    })
+    const translatedIds = Array.from(
+      new Set(
+        allTranslations.docs
+          .map((t) =>
+            typeof t.document === 'number' ? t.document : t.document?.id,
+          )
+          .filter((id): id is number => typeof id === 'number'),
+      ),
+    )
+    // "Untranslated" excludes notes (notes don't have translations) AND any
+    // doc that does have a translation row.
+    translatorIdConstraint = {
+      and: [
+        { documentType: { not_equals: 'note' } },
+        translatedIds.length > 0
+          ? { id: { not_in: translatedIds } }
+          : {},
+      ],
+    }
+  } else if (translatorParam) {
+    const translatorId = Number.parseInt(translatorParam, 10)
+    if (Number.isFinite(translatorId)) {
+      const byTranslator = await payload.find({
+        collection: 'translations',
+        where: { translator: { equals: translatorId } },
+        limit: 10000,
+        pagination: false,
+        depth: 0,
+      })
+      const docIds = Array.from(
+        new Set(
+          byTranslator.docs
+            .map((t) =>
+              typeof t.document === 'number' ? t.document : t.document?.id,
+            )
+            .filter((id): id is number => typeof id === 'number'),
+        ),
+      )
+      translatorIdConstraint = docIds.length > 0
+        ? { id: { in: docIds } }
+        : { id: { in: [-1] } } // empty match
+    }
+  }
+
+  const conditions: Where[] = [{ documentType: { in: [...types] } }]
+  if (activeTag) conditions.push({ tags: { in: [activeTag.id] } })
+  if (fromYear !== null) {
+    conditions.push({
+      dateOriginal: { greater_than_equal: `${fromYear}-01-01T00:00:00.000Z` },
+    })
+  }
+  if (toYear !== null) {
+    conditions.push({
+      dateOriginal: { less_than_equal: `${toYear}-12-31T23:59:59.999Z` },
+    })
+  }
+  if (translatorIdConstraint) conditions.push(translatorIdConstraint)
+  const where: Where = { and: conditions }
 
   const result = activeTag === null && tagSlug
     ? // Slug provided but unresolved → render empty result without querying.
@@ -171,24 +246,41 @@ export default async function ListPage({
 
   // Counts per type for the sidebar. Cheap at our scale; revisit if it
   // gets slow once we have thousands of docs.
-  const countResults = await Promise.all(
-    ALL_TYPES.map((t) =>
-      payload
-        .count({
-          collection: 'documents',
-          where: { documentType: { equals: t } },
-        })
-        .then((r) => [t, r.totalDocs] as const),
+  const [countResults, translatorsResult] = await Promise.all([
+    Promise.all(
+      ALL_TYPES.map((t) =>
+        payload
+          .count({
+            collection: 'documents',
+            where: { documentType: { equals: t } },
+          })
+          .then((r) => [t, r.totalDocs] as const),
+      ),
     ),
-  )
+    payload.find({
+      collection: 'users',
+      where: { isTranslator: { equals: true } },
+      limit: 50,
+      sort: 'displayName',
+      depth: 0,
+    }),
+  ])
   const typeCounts = Object.fromEntries(countResults) as Record<DocType, number>
+  const translatorOptions = translatorsResult.docs.map((u: User) => ({
+    value: String(u.id),
+    label: u.displayName || u.email || `User ${u.id}`,
+  }))
 
   return (
     <>
       <Chrome user={user} below={{ type: 'nav', active: 'documents' }} />
 
       <div className="flex">
-        <FilterSidebar selectedTypes={types} typeCounts={typeCounts} />
+        <FilterSidebar
+          selectedTypes={types}
+          typeCounts={typeCounts}
+          translators={translatorOptions}
+        />
 
         <main className="flex-1 p-8">
           <ListControls
@@ -359,6 +451,9 @@ function Pagination({
   if (params.per) baseQuery.set('per', params.per)
   if (params.view) baseQuery.set('view', params.view)
   if (params.tag) baseQuery.set('tag', params.tag)
+  if (params.from) baseQuery.set('from', params.from)
+  if (params.to) baseQuery.set('to', params.to)
+  if (params.translator) baseQuery.set('translator', params.translator)
 
   const linkFor = (p: number) => {
     const q = new URLSearchParams(baseQuery)

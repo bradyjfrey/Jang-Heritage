@@ -6,13 +6,36 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
+import { RefineSidebar } from '@/components/Search/RefineSidebar'
 import { SortDropdown } from '@/components/Search/SortDropdown'
 import { segmentChinese } from '@/hooks/segmentChinese'
-import type { Document, Media } from '@/payload-types'
+import type { Document, Media, Tag, User } from '@/payload-types'
 
-type SearchParams = { q?: string; sort?: string; page?: string }
+type SearchParams = {
+  q?: string
+  sort?: string
+  page?: string
+  matchIn?: string
+  type?: string
+  from?: string
+  to?: string
+  tag?: string
+  translator?: string
+}
 type SortMode = 'relevance' | 'newest' | 'oldest'
 type MatchedIn = 'transcription' | 'translation' | 'note-body' | 'title'
+
+// Parse a comma-separated URL param into a Set of selected values, or null
+// when the param is absent (which means "all options selected" by convention).
+function parseFilterList(raw: string | undefined): Set<string> | null {
+  if (!raw) return null
+  const items = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (items.length === 0) return null
+  return new Set(items)
+}
 
 type Match = {
   documentId: number
@@ -145,6 +168,14 @@ function formatDocDate(
   }
 }
 
+// Parse a year string like "1924" into a number, or null if blank/invalid.
+function parseYear(raw: string | undefined): number | null {
+  if (!raw) return null
+  const n = Number.parseInt(raw, 10)
+  if (!Number.isFinite(n) || n < 1 || n > 9999) return null
+  return n
+}
+
 // Push docs missing a date to the end regardless of sort direction.
 function compareByDate(a: Document, b: Document, dir: 'asc' | 'desc'): number {
   const aTime = a.dateOriginal ? new Date(a.dateOriginal).getTime() : NaN
@@ -204,6 +235,13 @@ export default async function SearchPage({
   const pageParam = Number.parseInt(params.page || '1', 10)
   const currentPage =
     Number.isFinite(pageParam) && pageParam >= 1 ? pageParam : 1
+
+  const matchInFilter = parseFilterList(params.matchIn)
+  const typeFilter = parseFilterList(params.type)
+  const tagFilter = parseFilterList(params.tag)
+  const fromYear = parseYear(params.from)
+  const toYear = parseYear(params.to)
+  const translatorFilter = (params.translator || '').trim()
 
   const payload = await getPayload({ config: await config })
   const headers = await getHeaders()
@@ -311,13 +349,48 @@ export default async function SearchPage({
     }
   }
 
+  // English ILIKE fallback for translations. Postgres FTS with the english
+  // config strips stopwords ("you", "from", "the", ...), so plain searches
+  // for those words return no results from FTS alone. ILIKE doesn't care
+  // about stopwords or stemming and catches them. Slightly higher rank than
+  // a title hit, slightly lower than a real FTS hit.
+  const englishTerms = queries.rawTerms.filter((t) => /^[A-Za-z0-9]+$/.test(t))
+  if (englishTerms.length > 0) {
+    const conditions = englishTerms
+      .map((t) => sql`text ILIKE ${'%' + t + '%'}`)
+      .reduce((acc, c, i) => (i === 0 ? c : sql`${acc} OR ${c}`))
+    const translationsLike = await drizzle.execute(sql`
+      SELECT document_id::int AS document_id, text
+      FROM translations
+      WHERE ${conditions}
+      LIMIT ${RESULT_LIMIT}
+    `)
+    for (const row of translationsLike.rows) {
+      const documentId = Number(row.document_id)
+      const text = String(row.text || '')
+      if (!Number.isNaN(documentId)) {
+        allMatches.push({
+          documentId,
+          matchedIn: 'translation',
+          rank: 0.08,
+          text,
+        })
+      }
+    }
+  }
+
   // Dedupe: keep best-ranked match per document.
   const dedup = new Map<number, Match>()
   for (const m of allMatches) {
     const existing = dedup.get(m.documentId)
     if (!existing || m.rank > existing.rank) dedup.set(m.documentId, m)
   }
-  const ordered = [...dedup.values()].sort((a, b) => b.rank - a.rank)
+  let ordered = [...dedup.values()].sort((a, b) => b.rank - a.rank)
+
+  // Match-in filter is the cheapest: drop entries before we even fetch docs.
+  if (matchInFilter) {
+    ordered = ordered.filter((m) => matchInFilter.has(m.matchedIn))
+  }
 
   let docs: Document[] = []
   if (ordered.length > 0) {
@@ -331,6 +404,68 @@ export default async function SearchPage({
     docs = ordered
       .map((m) => byId.get(m.documentId))
       .filter((d): d is Document => d != null)
+  }
+
+  // Compute the set of document types present in the unfiltered FTS result
+  // set. We pass this to the sidebar so it only renders Type checkboxes for
+  // types actually represented in this query — no point offering "Photo" as
+  // a filter when zero photos matched.
+  const availableTypes = new Set(docs.map((d) => d.documentType).filter(Boolean))
+
+  // Type / date / tag / translator filters apply to the post-FTS result set.
+  // All defaults to all-selected (param absent), so a missing filter passes
+  // every doc through.
+  if (typeFilter) {
+    docs = docs.filter((d) => typeFilter.has(d.documentType))
+  }
+  if (fromYear !== null || toYear !== null) {
+    docs = docs.filter((d) => {
+      if (!d.dateOriginal) return false
+      const year = new Date(d.dateOriginal).getFullYear()
+      if (!Number.isFinite(year)) return false
+      if (fromYear !== null && year < fromYear) return false
+      if (toYear !== null && year > toYear) return false
+      return true
+    })
+  }
+  if (tagFilter) {
+    docs = docs.filter((d) => {
+      const tags = (Array.isArray(d.tags) ? d.tags : []).filter(
+        (t): t is Tag => typeof t === 'object' && t !== null,
+      )
+      return tags.some((t) => t.slug && tagFilter.has(t.slug))
+    })
+  }
+  if (translatorFilter && docs.length > 0) {
+    const translationsForDocs = await payload.find({
+      collection: 'translations',
+      where: { document: { in: docs.map((d) => d.id) } },
+      limit: docs.length,
+      depth: 0,
+    })
+    const translatorByDoc = new Map<number, number | null>()
+    for (const t of translationsForDocs.docs) {
+      const docId =
+        typeof t.document === 'number' ? t.document : t.document?.id ?? null
+      if (typeof docId === 'number') {
+        const trId =
+          typeof t.translator === 'number'
+            ? t.translator
+            : t.translator?.id ?? null
+        translatorByDoc.set(docId, trId)
+      }
+    }
+    if (translatorFilter === 'untranslated') {
+      // Notes don't carry translations and shouldn't pollute "Untranslated".
+      docs = docs.filter(
+        (d) => !translatorByDoc.has(d.id) && d.documentType !== 'note',
+      )
+    } else {
+      const wantedId = Number.parseInt(translatorFilter, 10)
+      if (Number.isFinite(wantedId)) {
+        docs = docs.filter((d) => translatorByDoc.get(d.id) === wantedId)
+      }
+    }
   }
 
   if (sortMode === 'newest') {
@@ -347,11 +482,43 @@ export default async function SearchPage({
   const visibleDocs = docs.slice(sliceStart, sliceEnd)
   const matchByDoc = new Map(ordered.map((m) => [m.documentId, m]))
 
-  // Preserve q + sort across page links; only the page number changes.
+  // Sidebar options: every existing tag + every user marked as a translator.
+  // Loaded once per render; small enough at our scale that pagination is
+  // overkill.
+  const [allTagsResult, translatorsResult] = await Promise.all([
+    payload.find({
+      collection: 'tags',
+      limit: 200,
+      sort: 'name',
+      depth: 0,
+    }),
+    payload.find({
+      collection: 'users',
+      where: { isTranslator: { equals: true } },
+      limit: 50,
+      sort: 'displayName',
+      depth: 0,
+    }),
+  ])
+  const tagOptions = allTagsResult.docs
+    .filter((t): t is Tag & { slug: string } => typeof t.slug === 'string')
+    .map((t) => ({ value: t.slug, label: t.name }))
+  const translatorOptions = translatorsResult.docs.map((u: User) => ({
+    value: String(u.id),
+    label: u.displayName || u.email || `User ${u.id}`,
+  }))
+
+  // Preserve q + sort + every filter across page links; only the page number changes.
   const buildPageHref = (p: number) => {
     const sp = new URLSearchParams()
     if (rawQuery) sp.set('q', rawQuery)
     if (sortMode !== 'relevance') sp.set('sort', sortMode)
+    if (params.matchIn) sp.set('matchIn', params.matchIn)
+    if (params.type) sp.set('type', params.type)
+    if (params.from) sp.set('from', params.from)
+    if (params.to) sp.set('to', params.to)
+    if (params.tag) sp.set('tag', params.tag)
+    if (params.translator) sp.set('translator', params.translator)
     if (p > 1) sp.set('page', String(p))
     const qs = sp.toString()
     return qs ? `/search?${qs}` : '/search'
@@ -361,8 +528,8 @@ export default async function SearchPage({
     <>
       <Chrome user={user} below={{ type: 'nav' }} />
 
-      <main className="max-w-5xl mx-auto px-8 py-10">
-        {!rawQuery ? (
+      {!rawQuery ? (
+        <main className="max-w-5xl mx-auto px-8 py-10">
           <div className="text-ink-soft text-center py-16">
             <p className="font-serif-content text-2xl mb-2">Search</p>
             <p>
@@ -370,8 +537,15 @@ export default async function SearchPage({
               and note bodies.
             </p>
           </div>
-        ) : (
-          <>
+        </main>
+      ) : (
+        <div className="flex">
+          <RefineSidebar
+            tags={tagOptions}
+            translators={translatorOptions}
+            availableTypes={[...availableTypes]}
+          />
+          <main className="flex-1 px-8 py-10 max-w-5xl">
             <div className="flex items-end justify-between mb-6 gap-4">
               <div>
                 <h1 className="font-serif-content text-2xl mb-1">
@@ -420,9 +594,9 @@ export default async function SearchPage({
                 ) : null}
               </>
             )}
-          </>
-        )}
-      </main>
+          </main>
+        </div>
+      )}
     </>
   )
 }

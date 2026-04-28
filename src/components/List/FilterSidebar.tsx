@@ -13,17 +13,33 @@ const ALL_TYPES = [
 ] as const
 type DocType = (typeof ALL_TYPES)[number]
 
+const CURRENT_YEAR = new Date().getFullYear()
+const YEARS_ASC: number[] = []
+const YEARS_DESC: number[] = []
+for (let y = 1900; y <= CURRENT_YEAR; y++) YEARS_ASC.push(y)
+for (let y = CURRENT_YEAR; y >= 1900; y--) YEARS_DESC.push(y)
+
+type Option = { value: string; label: string }
+
 type Props = {
   selectedTypes: ReadonlyArray<DocType>
   typeCounts: Record<DocType, number>
+  translators: Option[]
 }
 
 // Filter sidebar for /list. URL is the source of truth: each toggle pushes a
 // new querystring and the list page re-renders. Defaults to all types
 // selected (matches feedback_filter_defaults memory: users reduce, never add).
-export function FilterSidebar({ selectedTypes, typeCounts }: Props) {
+export function FilterSidebar({
+  selectedTypes,
+  typeCounts,
+  translators,
+}: Props) {
   const router = useRouter()
   const params = useSearchParams()
+  const fromYear = params.get('from') || ''
+  const toYear = params.get('to') || ''
+  const translator = params.get('translator') || ''
 
   const updateUrl = useCallback(
     (updates: Record<string, string | null>) => {
@@ -83,6 +99,60 @@ export function FilterSidebar({ selectedTypes, typeCounts }: Props) {
               </label>
             ))}
           </div>
+        </div>
+
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-2">
+            Year
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <select
+              value={fromYear}
+              onChange={(e) => updateUrl({ from: e.target.value || null })}
+              className="bg-surface border border-[color:var(--border-soft)] rounded px-2 py-1.5 text-sm focus:outline-none focus:border-gold"
+            >
+              <option value="">From</option>
+              {YEARS_ASC.map((y) => (
+                <option key={y} value={String(y)}>
+                  {y}
+                </option>
+              ))}
+            </select>
+            <select
+              value={toYear}
+              onChange={(e) => updateUrl({ to: e.target.value || null })}
+              className="bg-surface border border-[color:var(--border-soft)] rounded px-2 py-1.5 text-sm focus:outline-none focus:border-gold"
+            >
+              <option value="">To</option>
+              {YEARS_DESC.map((y) => (
+                <option key={y} value={String(y)}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="mt-1 text-xs text-ink-faint">
+            By the document&apos;s original date.
+          </p>
+        </div>
+
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-2">
+            Translator
+          </div>
+          <select
+            value={translator}
+            onChange={(e) => updateUrl({ translator: e.target.value || null })}
+            className="w-full bg-surface border border-[color:var(--border-soft)] rounded px-2 py-1.5 text-sm focus:outline-none focus:border-gold"
+          >
+            <option value="">Anyone</option>
+            <option value="untranslated">Untranslated</option>
+            {translators.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </aside>
