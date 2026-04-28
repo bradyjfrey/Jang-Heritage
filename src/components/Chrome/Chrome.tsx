@@ -84,9 +84,8 @@ export function Chrome({ user, active }: Props) {
           >
             Settings
           </Link>
-          <span className="ml-4">
-            <SignOutButton />
-          </span>
+          <NavSeparator />
+          <SignOutButton />
         </div>
       </nav>
     </header>

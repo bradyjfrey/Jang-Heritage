@@ -27,6 +27,12 @@ export default buildConfig({
   },
   collections: [Users, Documents, Transcriptions, Translations, Tags, Media],
   editor: lexicalEditor(),
+  // Per-IP throttle on /api/* requests. Defaults are Payload's, set
+  // explicitly so the value is visible. Returns 429 when exceeded.
+  rateLimit: {
+    max: 500,
+    window: 15 * 60 * 1000,
+  },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

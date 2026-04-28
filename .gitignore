@@ -18,6 +18,9 @@ next-env.d.ts
 # Payload uploads (dev only; production lives in R2 via @payloadcms/storage-s3)
 media/
 
+# Postgres backups created by scripts/backup-pg.sh
+backups/
+
 # TypeScript / build artefacts
 *.tsbuildinfo
 
