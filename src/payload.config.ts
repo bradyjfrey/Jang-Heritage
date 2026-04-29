@@ -1,5 +1,4 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
@@ -37,27 +36,6 @@ export default buildConfig({
     },
     afterSchemaInit: [addSearchVectors],
   }),
-  // Gmail SMTP (app password). Used by the Users afterChange hook to send
-  // invite emails. Skipped entirely in build environments where SMTP_HOST
-  // isn't set — the adapter verifies the transport at init, which would
-  // hard-fail on a build server with no SMTP available.
-  ...(process.env.SMTP_HOST
-    ? {
-        email: nodemailerAdapter({
-          defaultFromAddress: process.env.MAIL_FROM_EMAIL || '',
-          defaultFromName: process.env.MAIL_FROM_NAME || 'Jang Heritage',
-          transportOptions: {
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT) || 465,
-            secure: Number(process.env.SMTP_PORT) === 465,
-            auth: {
-              user: process.env.SMTP_USER,
-              pass: process.env.SMTP_PASS,
-            },
-          },
-        }),
-      }
-    : {}),
   sharp,
   plugins: [
     // Route Media uploads to Cloudflare R2 via the S3-compatible API.

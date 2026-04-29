@@ -19,7 +19,6 @@
     "@aws-sdk/client-s3": "^3.730.0",
     "@payloadcms/db-postgres": "^3.59.0",
     "@payloadcms/drizzle": "^3.84.1",
-    "@payloadcms/email-nodemailer": "^3.59.0",
     "@payloadcms/next": "^3.59.0",
     "@payloadcms/richtext-lexical": "^3.59.0",
     "@payloadcms/storage-s3": "^3.84.1",

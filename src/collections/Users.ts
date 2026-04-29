@@ -1,47 +1,6 @@
-import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { JWTAuthentication } from 'payload'
 import { isAdmin, isAuthed } from '../access/byRole'
-
-// Send a one-shot invite email when a new login-capable user is created.
-// No tokens, no expiry: the allowlist + Google SSO are the security boundary.
-const sendInviteEmail: CollectionAfterChangeHook = async ({
-  doc,
-  operation,
-  req,
-}) => {
-  if (operation !== 'create') return doc
-  if (doc.kind !== 'login') return doc
-  if (!doc.email) return doc
-  const baseUrl =
-    process.env.OAUTH_REDIRECT_BASE?.replace(/\/$/, '') ||
-    'http://localhost:3000'
-  const greeting = doc.displayName ? `Hi ${doc.displayName},` : 'Hi,'
-  const text = `${greeting}
-
-Brady has invited you to Jang Heritage, a private archive of family letters and diaries.
-
-Visit ${baseUrl} and click "Sign in with Google". Use this email address: ${doc.email}.
-
-A Google Account is required for login. Reply to this message if you need anything.`
-  try {
-    await req.payload.sendEmail({
-      to: doc.email,
-      subject: "You've been invited to Jang Heritage",
-      text,
-    })
-    req.payload.logger.info({
-      msg: 'Invite email sent',
-      to: doc.email,
-    })
-  } catch (err) {
-    req.payload.logger.error({
-      msg: 'Invite email failed',
-      to: doc.email,
-      err,
-    })
-  }
-  return doc
-}
 
 // Users does double duty: auth-capable users (kind='login') AND credit-only
 // contributors (kind='credit-only', no real email/auth, just attribution).
@@ -84,9 +43,6 @@ export const Users: CollectionConfig = {
         authenticate: JWTAuthentication,
       },
     ],
-  },
-  hooks: {
-    afterChange: [sendInviteEmail],
   },
   fields: [
     // With local strategy disabled, Payload no longer auto-adds an `email`
