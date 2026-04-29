@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import type { Document, User } from '@/payload-types'
+import type { Document, Media, User } from '@/payload-types'
 
+import { NoteAttachments } from '@/components/DocumentView/NoteAttachments'
 import styles from './Editor.module.css'
 
 type Props = {
@@ -307,6 +308,17 @@ export function NoteEditor({ document: doc, user }: Props) {
                 style={{ fontSize: `${bodySize}px` }}
                 placeholder="Start typing… Notes are for research leads, contacts, transcribed inscriptions, anything that doesn't have a scan attached."
                 autoFocus={docId == null}
+              />
+              <NoteAttachments
+                documentId={docId}
+                initialAttachments={
+                  Array.isArray(doc?.attachments)
+                    ? (doc.attachments.filter(
+                        (a): a is Media => typeof a === 'object' && a !== null,
+                      ) as Media[])
+                    : []
+                }
+                initialUpdatedAt={docUpdatedAt || ''}
               />
             </div>
           </div>

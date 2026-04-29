@@ -9,6 +9,7 @@ import { CopyButton } from '@/components/CopyButton/CopyButton'
 import { NoteBody } from '@/components/NoteBody/NoteBody'
 import { DetailsEditor } from '@/components/DocumentView/DetailsEditor'
 import { HistoryTimeline } from '@/components/DocumentView/HistoryTimeline'
+import { NoteAttachments } from '@/components/DocumentView/NoteAttachments'
 import { NotesEditor } from '@/components/DocumentView/NotesEditor'
 import { PeopleEditor } from '@/components/DocumentView/PeopleEditor'
 import { PinButton } from '@/components/DocumentView/PinButton'
@@ -272,27 +273,40 @@ export default async function DocumentPage({
           </div>
 
           {isNote ? (
-            doc.body ? (
-              <section className="mb-8">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-serif-content text-xl">Note:</h2>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-ink-soft">
-                      {noteEditorName ? `by ${noteEditorName} · ` : ''}
-                      {noteEdited ? `last edit ${noteEdited}` : ''}
-                    </span>
-                    <CopyButton text={doc.body} label="Copy note body" />
+            <>
+              {doc.body ? (
+                <section className="mb-8">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-serif-content text-xl">Note:</h2>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-ink-soft">
+                        {noteEditorName ? `by ${noteEditorName} · ` : ''}
+                        {noteEdited ? `last edit ${noteEdited}` : ''}
+                      </span>
+                      <CopyButton text={doc.body} label="Copy note body" />
+                    </div>
                   </div>
+                  <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-8">
+                    <NoteBody source={doc.body} />
+                  </div>
+                </section>
+              ) : (
+                <div className="text-ink-faint text-sm py-8">
+                  This note is empty.
                 </div>
-                <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-8">
-                  <NoteBody source={doc.body} />
-                </div>
-              </section>
-            ) : (
-              <div className="text-ink-faint text-sm py-8">
-                This note is empty.
-              </div>
-            )
+              )}
+              <NoteAttachments
+                documentId={doc.id}
+                initialAttachments={(Array.isArray(doc.attachments)
+                  ? doc.attachments
+                  : []
+                ).filter(
+                  (a): a is Media => typeof a === 'object' && a !== null,
+                )}
+                initialUpdatedAt={doc.updatedAt}
+                canEdit={canEdit}
+              />
+            </>
           ) : null}
 
           {!isNote && scans.length > 0 ? (
