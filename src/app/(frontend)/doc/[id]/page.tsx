@@ -9,6 +9,7 @@ import { CopyButton } from '@/components/CopyButton/CopyButton'
 import { NoteBody } from '@/components/NoteBody/NoteBody'
 import { DetailsEditor } from '@/components/DocumentView/DetailsEditor'
 import { HistoryTimeline } from '@/components/DocumentView/HistoryTimeline'
+import { NotesEditor } from '@/components/DocumentView/NotesEditor'
 import { PeopleEditor } from '@/components/DocumentView/PeopleEditor'
 import { PinButton } from '@/components/DocumentView/PinButton'
 import { ScanViewer } from '@/components/DocumentView/ScanViewer'
@@ -344,15 +345,18 @@ export default async function DocumentPage({
             </section>
           ) : null}
 
-          {!isNote && doc.notes ? (
+          {!isNote && canEdit ? (
+            <NotesEditor
+              documentId={doc.id}
+              initialNotes={doc.notes || ''}
+              initialUpdatedAt={doc.updatedAt}
+            />
+          ) : !isNote && doc.notes ? (
             <section className="mt-8">
               <h2 className="font-serif-content text-xl mb-3">Notes</h2>
               <div className="bg-paper-warm border border-[color:var(--border-soft)] rounded-lg p-5 text-sm text-ink whitespace-pre-line">
                 {doc.notes}
               </div>
-              <p className="mt-1 text-xs text-ink-faint">
-                Sidecar notes about this document. Inline editing in a follow-up.
-              </p>
             </section>
           ) : null}
         </div>
