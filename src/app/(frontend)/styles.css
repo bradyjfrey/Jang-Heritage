@@ -115,55 +115,6 @@ mark.snippet {
 }
 .md-body th { background: var(--paper-warm); font-weight: 600; }
 
-/* Note card placeholder (for cards/results that have no scan attached).
-   Parchment swatch with a 陳 family character watermark.
-   Self-fills the parent (no need to combine with Tailwind absolute/inset)
-   so the cascade doesn't fight over `position`. */
-.note-card-bg {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(168,132,62,0.10) 0%, transparent 60%),
-    linear-gradient(135deg, var(--paper-warm) 0%, var(--paper) 100%);
-  overflow: hidden;
-}
-.note-card-bg::before {
-  content: "陳";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -55%);
-  font-family: "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", serif;
-  font-size: 6rem;
-  color: var(--seal);
-  opacity: 0.20;
-  font-weight: 600;
-  pointer-events: none;
-}
-.note-card-bg::after {
-  content: "Note";
-  position: absolute;
-  bottom: 3.75rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  pointer-events: none;
-}
-
-/* Tiny variant for table-row thumbnails: only the watermark glyph,
-   centered, slightly heavier opacity, no Note label. */
-.note-card-bg.thumb::before {
-  font-size: 1.5rem;
-  transform: translate(-50%, -50%);
-  opacity: 0.4;
-}
-.note-card-bg.thumb::after {
-  display: none;
-}
-
 /* Save status pill (used in the editor header) */
 .save-status {
   font-size: 0.75rem;

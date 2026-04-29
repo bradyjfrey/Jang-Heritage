@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
+import { NotePreview } from '@/components/NotePreview/NotePreview'
 import type { Document, Media } from '@/payload-types'
 
 function relativeTime(iso: string | undefined): string {
@@ -239,7 +240,7 @@ function RecentCard({ doc }: { doc: Document }) {
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
-          <div className="note-card-bg"></div>
+          <NotePreview title={doc.title} body={doc.body} variant="full" />
         )}
       </div>
       <div className="bg-seal p-4">

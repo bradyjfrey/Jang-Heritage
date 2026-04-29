@@ -7,6 +7,7 @@ import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
 import { FilterSidebar } from '@/components/List/FilterSidebar'
 import { ListControls } from '@/components/List/ListControls'
+import { NotePreview } from '@/components/NotePreview/NotePreview'
 import type { Document, Media, Tag, User } from '@/payload-types'
 
 const ALL_TYPES = [
@@ -376,7 +377,7 @@ function TableRow({ doc }: { doc: Document }) {
               className="absolute inset-0 w-full h-full object-cover"
             />
           ) : (
-            <div className="note-card-bg thumb"></div>
+            <NotePreview title={doc.title} body={doc.body} variant="thumb" />
           )}
         </Link>
       </td>
@@ -425,7 +426,7 @@ function Card({ doc }: { doc: Document }) {
           className="absolute inset-0 w-full h-full object-cover"
         />
       ) : (
-        <div className="note-card-bg"></div>
+        <NotePreview title={doc.title} body={doc.body} variant="full" />
       )}
       <div className="absolute inset-x-0 bottom-0 bg-seal px-3 py-2">
         <div className="text-white text-sm font-serif-content leading-tight line-clamp-1">

@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
+import { NotePreview } from '@/components/NotePreview/NotePreview'
 import { RefineSidebar } from '@/components/Search/RefineSidebar'
 import { SortDropdown } from '@/components/Search/SortDropdown'
 import { segmentChinese } from '@/hooks/segmentChinese'
@@ -637,7 +638,7 @@ function ResultRow({
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
-          <div className="note-card-bg thumb"></div>
+          <NotePreview title={doc.title} body={doc.body} variant="thumb" />
         )}
       </div>
       <div className="flex-1 min-w-0">
