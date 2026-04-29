@@ -345,10 +345,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
               </a>
             </div>
           </div>
-          <div
-            className={`${styles.scrollArea} scroll-area bg-paper-warm`}
-            style={{ overflow: 'auto', padding: '1rem' }}
-          >
+          <div className={`${styles.scrollArea} scroll-area bg-paper-warm overflow-auto p-4`}>
             {currentScan?.url ? (
               <img
                 src={currentScan.url}

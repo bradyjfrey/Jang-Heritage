@@ -151,32 +151,16 @@ export default async function MarkdownReferencePage() {
 function FeatureRow({ feature, last }: { feature: Feature; last: boolean }) {
   return (
     <section
-      className="py-5"
-      style={{
-        borderBottom: last ? 'none' : '1px dashed var(--border-soft)',
-      }}
+      className={`py-5 ${last ? '' : 'border-b border-dashed border-[color:var(--border-soft)]'}`}
     >
       <h3 className="font-serif-content text-lg mb-1">{feature.heading}</h3>
       <p className="text-sm text-ink-soft mb-3">{feature.blurb}</p>
-      <div className="grid gap-5" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)' }}>
+      <div className="grid grid-cols-2 gap-5">
         <div>
           <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-1.5">
             Source
           </div>
-          <pre
-            className="whitespace-pre-wrap break-words"
-            style={{
-              fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
-              fontSize: '0.85rem',
-              lineHeight: '1.55',
-              background: 'var(--paper-warm)',
-              color: 'var(--ink)',
-              padding: '0.85rem 1rem',
-              borderRadius: 6,
-              border: '1px solid var(--border-soft)',
-              margin: 0,
-            }}
-          >
+          <pre className="whitespace-pre-wrap break-words font-mono text-[0.85rem] leading-[1.55] bg-paper-warm text-ink py-[0.85rem] px-4 rounded-md border border-[color:var(--border-soft)] m-0">
             {feature.source}
           </pre>
         </div>

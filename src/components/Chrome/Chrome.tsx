@@ -95,8 +95,7 @@ export function Chrome({ user, active }: Props) {
 function NavSeparator() {
   return (
     <span
-      className="mx-3"
-      style={{ color: 'var(--border-soft)' }}
+      className="mx-3 text-border-soft"
       aria-hidden="true"
     >
       /

@@ -73,8 +73,7 @@ export function ProfileForm({ initialDisplayName }: Props) {
       {errorMessage ? (
         <div
           role="alert"
-          className="text-sm rounded-md border border-seal/30 bg-seal/5 px-3 py-2"
-          style={{ color: 'var(--seal)' }}
+          className="text-sm text-seal rounded-md border border-seal/30 bg-seal/5 px-3 py-2"
         >
           {errorMessage}
         </div>

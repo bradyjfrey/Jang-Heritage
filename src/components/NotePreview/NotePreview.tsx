@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import styles from './NotePreview.module.css'
 
 type Props = {
   title?: string | null
@@ -17,8 +17,7 @@ export function NotePreview({ title, body, variant = 'full' }: Props) {
     return (
       <div className="absolute inset-0 bg-white px-1.5 py-1 overflow-hidden">
         <div
-          className="font-serif-content text-ink leading-tight break-words"
-          style={thumbTitleStyle}
+          className={`${styles.thumbTitle} font-serif-content text-ink leading-tight break-words`}
         >
           {cleanTitle}
         </div>
@@ -38,14 +37,6 @@ export function NotePreview({ title, body, variant = 'full' }: Props) {
       ) : null}
     </div>
   )
-}
-
-const thumbTitleStyle: CSSProperties = {
-  fontSize: '0.5rem',
-  display: '-webkit-box',
-  WebkitBoxOrient: 'vertical',
-  WebkitLineClamp: 4,
-  overflow: 'hidden',
 }
 
 function stripMarkdown(s: string): string {

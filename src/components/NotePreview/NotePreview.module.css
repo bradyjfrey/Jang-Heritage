@@ -1,0 +1,11 @@
+/* Tiny title preview shown inside table-row / search thumbnails. Uses
+   -webkit-line-clamp to truncate to 4 lines with an ellipsis; the parent
+   thumbnail provides the bounding box. */
+.thumbTitle {
+  font-size: 0.5rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}

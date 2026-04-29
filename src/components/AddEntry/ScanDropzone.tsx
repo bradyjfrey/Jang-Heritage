@@ -161,7 +161,7 @@ export function ScanDropzone() {
         <div className="text-sm text-ink-soft">Creating document…</div>
       ) : null}
       {status === 'error' ? (
-        <div className="text-sm" style={{ color: 'var(--seal)' }}>
+        <div className="text-sm text-seal">
           {error || 'Upload failed'}
           <div className="text-xs text-ink-faint mt-2">Click to try again.</div>
         </div>

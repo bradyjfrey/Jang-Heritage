@@ -200,10 +200,7 @@ function StatCard({
   footer?: string
 }) {
   return (
-    <div
-      className="border border-[color:var(--border-soft)] rounded-lg p-5"
-      style={{ background: 'var(--border-soft)' }}
-    >
+    <div className="border border-[color:var(--border-soft)] bg-border-soft rounded-lg p-5">
       <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-2">
         {label}
       </div>
