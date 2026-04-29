@@ -10,14 +10,18 @@ type Props = {
   initialAttachments: Media[]
   initialUpdatedAt: string
   canEdit?: boolean
+  // The editor renders a pane header that already says "Attachments";
+  // pass false there to suppress the duplicate inline heading.
+  showHeading?: boolean
 }
 
 type SaveStatus = 'idle' | 'uploading' | 'saving' | 'error' | 'conflict'
 
-// File attachments for notes. Lists existing attachments as download links.
-// In edit mode, allows uploading new files (any type — images, PDFs, etc.)
-// and removing existing ones. Each upload posts to /api/media, then PATCHes
-// the document's attachments array. Concurrency via X-If-Unmodified-Since.
+// File attachments for notes, displayed as a thumbnail gallery so the
+// images themselves carry context. Non-image files (PDFs, docs) fall back
+// to a generic file glyph labelled with the extension. Each upload posts
+// to /api/media, then PATCHes the document's attachments array. Concurrency
+// is enforced with X-If-Unmodified-Since.
 //
 // If the document doesn't exist yet (new note before first save), the
 // upload UI is hidden — the note has to autosave first so we have an id.
@@ -26,6 +30,7 @@ export function NoteAttachments({
   initialAttachments,
   initialUpdatedAt,
   canEdit = true,
+  showHeading = true,
 }: Props) {
   const router = useRouter()
   const [attachments, setAttachments] = useState<Media[]>(initialAttachments)
@@ -125,30 +130,11 @@ export function NoteAttachments({
     if (attachments.length === 0) return null
     return (
       <section className="mt-8">
-        <h2 className="font-serif-content text-xl mb-3">Attachments</h2>
-        <ul className="space-y-1.5 text-sm">
-          {attachments.map((a) => {
-            const description =
-              a.alt && a.alt !== a.filename ? a.alt : ''
-            const href = a.url || `/api/media/file/${a.filename}`
-            return (
-              <li key={a.id}>
-                <span className="text-ink-faint mr-2" aria-hidden="true">•</span>
-                {description ? (
-                  <span className="text-ink">{description}: </span>
-                ) : null}
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-seal hover:underline"
-                  title={a.filename || ''}
-                >
-                  {a.filename || `Attachment ${a.id}`}
-                </a>
-              </li>
-            )
-          })}
+        <h2 className="font-serif-content text-xl mb-3">Attachments:</h2>
+        <ul className="grid grid-cols-5 gap-3">
+          {attachments.map((a) => (
+            <ViewCard key={a.id} media={a} />
+          ))}
         </ul>
       </section>
     )
@@ -156,7 +142,10 @@ export function NoteAttachments({
 
   return (
     <section>
-      <div className="flex items-center justify-end mb-3 min-h-[1.25rem]">
+      <div className="flex items-center justify-between mb-3 min-h-[1.25rem]">
+        {showHeading ? (
+          <h2 className="font-serif-content text-xl">Attachments:</h2>
+        ) : <span />}
         <span className="text-xs text-ink-soft">
           {status === 'uploading'
             ? 'Uploading…'
@@ -169,40 +158,41 @@ export function NoteAttachments({
                   : null}
         </span>
       </div>
-      {attachments.length > 0 ? (
-        <ul className="space-y-1.5 mb-3">
-          {attachments.map((a) => (
-            <AttachmentRow
-              key={a.id}
-              media={a}
-              onRemove={() => setPendingDeleteId(a.id)}
-            />
-          ))}
-        </ul>
-      ) : null}
 
-      {documentId != null ? (
-        <>
-          <input
-            ref={inputRef}
-            type="file"
-            multiple
-            onChange={(e) => void onFiles(e.target.files)}
-            className="hidden"
-            id={`attach-input-${documentId}`}
+      <ul className="grid grid-cols-5 gap-3">
+        {attachments.map((a) => (
+          <EditCard
+            key={a.id}
+            media={a}
+            onRemove={() => setPendingDeleteId(a.id)}
           />
-          <label
-            htmlFor={`attach-input-${documentId}`}
-            className="inline-block bg-paper-warm hover:bg-seal hover:text-white border border-[color:var(--border-soft)] hover:border-seal rounded-md px-3 py-1.5 text-sm cursor-pointer transition-colors"
-          >
-            + Add files
-          </label>
-        </>
-      ) : (
-        <p className="text-xs text-ink-faint">
+        ))}
+        {documentId != null ? (
+          <li>
+            <input
+              ref={inputRef}
+              type="file"
+              multiple
+              onChange={(e) => void onFiles(e.target.files)}
+              className="hidden"
+              id={`attach-input-${documentId}`}
+            />
+            <label
+              htmlFor={`attach-input-${documentId}`}
+              className="aspect-square flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-[color:var(--border-soft)] bg-paper-warm/50 text-ink-soft text-xs hover:bg-seal hover:text-white hover:border-seal cursor-pointer transition-colors"
+            >
+              <span className="text-2xl leading-none">+</span>
+              <span>Add files</span>
+            </label>
+          </li>
+        ) : null}
+      </ul>
+
+      {documentId == null ? (
+        <p className="text-xs text-ink-faint mt-3">
           Save the note first, then you can add attachments.
         </p>
-      )}
+      ) : null}
 
       <ConfirmDialog
         open={pendingDeleteId !== null}
@@ -220,10 +210,93 @@ export function NoteAttachments({
   )
 }
 
-// "Photo of historic home: <URL>" — description on the left, colon, then
-// the file URL rendered verbatim as a hyperlink. Description autosaves on
-// blur via PATCH /api/media. No mode switching; the input is always there.
-function AttachmentRow({
+function isImage(media: Media): boolean {
+  return (media.mimeType || '').startsWith('image/')
+}
+
+function fileExt(media: Media): string {
+  const name = media.filename || ''
+  const dot = name.lastIndexOf('.')
+  return dot >= 0 ? name.slice(dot + 1).toUpperCase() : 'FILE'
+}
+
+// Generic page-with-folded-corner glyph for non-image attachments.
+function FileGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="36"
+      height="36"
+      aria-hidden="true"
+      className="text-ink-soft"
+    >
+      <path
+        d="M6 3h8l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 3v4h4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function Thumbnail({ media }: { media: Media }) {
+  const href = media.url || `/api/media/file/${media.filename}`
+  if (isImage(media)) {
+    return (
+      <img
+        src={href}
+        alt={media.alt || media.filename || ''}
+        className="w-full h-full object-cover"
+      />
+    )
+  }
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-1 px-2">
+      <FileGlyph />
+      <span className="text-[10px] tracking-wider text-ink-soft uppercase">
+        {fileExt(media)}
+      </span>
+    </div>
+  )
+}
+
+// Read-only gallery card. Whole tile is the link.
+function ViewCard({ media }: { media: Media }) {
+  const href = media.url || `/api/media/file/${media.filename}`
+  const description =
+    media.alt && media.alt !== media.filename ? media.alt : ''
+  return (
+    <li>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block aspect-square rounded-md overflow-hidden border border-[color:var(--border-soft)] bg-paper-warm hover:ring-2 hover:ring-gold transition"
+        title={media.filename || ''}
+      >
+        <Thumbnail media={media} />
+      </a>
+      {description ? (
+        <p className="mt-1.5 text-xs text-ink-soft line-clamp-2">{description}</p>
+      ) : null}
+    </li>
+  )
+}
+
+// Editable gallery card. Hover reveals a delete button in the corner;
+// the description input below the thumbnail autosaves on blur via
+// PATCH /api/media. Media.alt is required, so empty descriptions revert
+// to the filename on save.
+function EditCard({
   media,
   onRemove,
 }: {
@@ -239,7 +312,6 @@ function AttachmentRow({
   async function save() {
     const trimmed = description.trim()
     if (trimmed === savedDescription) return
-    // Media.alt is required, so empty descriptions revert to filename.
     const payload = trimmed || media.filename || `Attachment ${media.id}`
     setStatus('saving')
     try {
@@ -261,39 +333,35 @@ function AttachmentRow({
   }
 
   return (
-    <li className="text-sm">
-      <div className="flex items-center gap-2">
-      <span className="text-ink-faint shrink-0" aria-hidden="true">•</span>
+    <li className="group relative">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block aspect-square rounded-md overflow-hidden border border-[color:var(--border-soft)] bg-paper-warm hover:ring-2 hover:ring-gold transition"
+        title={media.filename || ''}
+      >
+        <Thumbnail media={media} />
+      </a>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-1.5 right-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-seal text-white text-xs leading-none opacity-0 group-hover:opacity-100 focus:opacity-100 hover:bg-black transition"
+        aria-label="Remove attachment"
+        title="Remove attachment"
+      >
+        ×
+      </button>
       <input
         type="text"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         onBlur={() => void save()}
         placeholder="Describe this attachment"
-        className={`basis-1/6 shrink-0 min-w-0 bg-transparent border border-transparent rounded px-2 py-1 transition-colors hover:border-[color:var(--border-soft)] hover:bg-paper-warm focus:outline-none focus:border-gold focus:bg-paper-warm ${
+        className={`mt-1.5 w-full text-xs bg-transparent border border-transparent rounded px-1.5 py-1 transition-colors hover:border-[color:var(--border-soft)] hover:bg-paper-warm focus:outline-none focus:border-gold focus:bg-paper-warm ${
           status === 'error' ? '!border-seal' : ''
         }`}
       />
-      <span className="text-ink-faint shrink-0">:</span>
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-seal hover:underline truncate min-w-0"
-        title={media.filename || ''}
-      >
-        {media.filename || `Attachment ${media.id}`}
-      </a>
-      <button
-        type="button"
-        onClick={onRemove}
-        className="ml-3 shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-seal text-white text-xs leading-none hover:bg-black transition-colors"
-        aria-label="Remove attachment"
-        title="Remove attachment"
-      >
-        ×
-      </button>
-      </div>
     </li>
   )
 }

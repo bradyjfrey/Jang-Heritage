@@ -327,6 +327,7 @@ export function NoteEditor({ document: doc, user }: Props) {
                   : []
               }
               initialUpdatedAt={docUpdatedAt || ''}
+              showHeading={false}
             />
           </div>
         </div>
