@@ -4,6 +4,9 @@
 // Usage:
 //   pnpm tsx scripts/check-media-row.ts <filename-or-id>
 
+import { config as loadDotenv } from 'dotenv'
+loadDotenv()
+
 import { getPayload } from 'payload'
 import config from '../src/payload.config'
 

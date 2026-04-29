@@ -1,9 +1,12 @@
 { pkgs, ... }:
 
 {
-  # Load .env automatically so commands run inside the devenv shell
-  # see DATABASE_URL, PAYLOAD_SECRET, etc. (Next.js also reads .env on its own.)
-  dotenv.enable = true;
+  # Don't have devenv load .env. Next.js reads it directly on every dev
+  # server start, and devenv's loader caches values in .devenv/shell-*.sh
+  # — those caches go stale when .env changes, which has bitten us
+  # repeatedly. Diagnostic scripts that need env vars should source .env
+  # explicitly or be invoked via `pnpm tsx` / `next dev`.
+  dotenv.enable = false;
 
   # Node 24 LTS + pnpm, scoped to this project.
   # System Node 25 (claude-code, netlify-cli) is unaffected.

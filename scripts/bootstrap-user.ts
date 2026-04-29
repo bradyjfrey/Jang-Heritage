@@ -11,6 +11,10 @@
 // Example:
 //   pnpm tsx "scripts/bootstrap-user.ts" brady@bradyjfrey.com "Brady Frey"
 
+// devenv no longer auto-loads .env, so the script self-loads.
+import { config as loadDotenv } from 'dotenv'
+loadDotenv()
+
 import { getPayload } from 'payload'
 import config from '../src/payload.config'
 
