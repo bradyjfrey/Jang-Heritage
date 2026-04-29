@@ -309,18 +309,25 @@ export function NoteEditor({ document: doc, user }: Props) {
                 placeholder="Start typing… Notes are for research leads, contacts, transcribed inscriptions, anything that doesn't have a scan attached."
                 autoFocus={docId == null}
               />
-              <NoteAttachments
-                documentId={docId}
-                initialAttachments={
-                  Array.isArray(doc?.attachments)
-                    ? (doc.attachments.filter(
-                        (a): a is Media => typeof a === 'object' && a !== null,
-                      ) as Media[])
-                    : []
-                }
-                initialUpdatedAt={docUpdatedAt || ''}
-              />
             </div>
+          </div>
+        </div>
+        <div className={styles.pane}>
+          <div className={styles.paneHeader}>
+            <span className="text-base">Attachments</span>
+          </div>
+          <div className={`${styles.paneBody} scroll-area`}>
+            <NoteAttachments
+              documentId={docId}
+              initialAttachments={
+                Array.isArray(doc?.attachments)
+                  ? (doc.attachments.filter(
+                      (a): a is Media => typeof a === 'object' && a !== null,
+                    ) as Media[])
+                  : []
+              }
+              initialUpdatedAt={docUpdatedAt || ''}
+            />
           </div>
         </div>
       </div>

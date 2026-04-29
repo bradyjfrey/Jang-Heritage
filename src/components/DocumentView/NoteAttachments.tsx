@@ -155,9 +155,8 @@ export function NoteAttachments({
   }
 
   return (
-    <section className="mt-8">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="font-serif-content text-xl">Attachments</h2>
+    <section>
+      <div className="flex items-center justify-end mb-3 min-h-[1.25rem]">
         <span className="text-xs text-ink-soft">
           {status === 'uploading'
             ? 'Uploading…'
@@ -271,10 +270,8 @@ function AttachmentRow({
         onChange={(e) => setDescription(e.target.value)}
         onBlur={() => void save()}
         placeholder="Describe this attachment"
-        className={`basis-1/6 shrink-0 min-w-0 bg-paper-warm border rounded px-2 py-1 focus:outline-none focus:border-gold ${
-          status === 'error'
-            ? 'border-seal'
-            : 'border-[color:var(--border-soft)]'
+        className={`basis-1/6 shrink-0 min-w-0 bg-transparent border border-transparent rounded px-2 py-1 transition-colors hover:border-[color:var(--border-soft)] hover:bg-paper-warm focus:outline-none focus:border-gold focus:bg-paper-warm ${
+          status === 'error' ? '!border-seal' : ''
         }`}
       />
       <span className="text-ink-faint shrink-0">:</span>

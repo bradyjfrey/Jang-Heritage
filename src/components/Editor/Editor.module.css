@@ -105,16 +105,22 @@
   }
 }
 
-/* Note editor: a single full-width pane with a centered measure for the
-   markdown source. Overrides the multi-column grid via .noteVariant. */
+/* Note editor: two columns split on the golden ratio (φ ≈ 1.618).
+   Left = attachments, right = notes textarea. Notes get the larger
+   share since they're the primary content. */
 .editMain.noteVariant {
-  display: block !important;
-  background: var(--paper) !important;
+  display: grid !important;
+  grid-template-columns: 1.618fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 1px;
+  background: var(--border-soft) !important;
+}
+.noteVariant > .pane {
+  background: var(--paper);
 }
 .noteMeasure {
   max-width: 75ch;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
   height: 100%;
   display: flex;
   flex-direction: column;
