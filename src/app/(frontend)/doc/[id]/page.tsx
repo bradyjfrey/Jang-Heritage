@@ -257,11 +257,11 @@ export default async function DocumentPage({
     <>
       <Chrome user={user} active={isNote ? 'notes' : 'scans'} />
 
-      <main className="max-w-7xl mx-auto px-8 py-10 grid grid-cols-[1fr_18rem] gap-10">
+      <main className="max-w-7xl mx-auto px-4 py-8 md:px-8 md:py-10 grid grid-cols-1 gap-6 md:grid-cols-[1fr_18rem] md:gap-10">
         <div>
           <div className="mb-6">
             <div className="flex items-start justify-between gap-4 mb-2">
-              <h1 className="font-serif-content text-3xl">{doc.title}</h1>
+              <h1 className="font-serif-content text-2xl md:text-3xl">{doc.title}</h1>
               <PinButton
                 documentId={doc.id}
                 initialPinned={Boolean(doc.pinned)}
@@ -286,7 +286,7 @@ export default async function DocumentPage({
                       <CopyButton text={doc.body} label="Copy note body" />
                     </div>
                   </div>
-                  <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-8">
+                  <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-4 md:p-8">
                     <NoteBody source={doc.body} />
                   </div>
                 </section>
@@ -330,7 +330,7 @@ export default async function DocumentPage({
                   />
                 </div>
               </div>
-              <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-6 font-cjk text-base leading-loose whitespace-pre-line">
+              <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-4 md:p-6 font-cjk text-base leading-loose whitespace-pre-line">
                 {transcription.text}
               </div>
             </section>
@@ -353,7 +353,7 @@ export default async function DocumentPage({
                   />
                 </div>
               </div>
-              <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-6 font-serif-content text-base leading-relaxed whitespace-pre-line">
+              <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-4 md:p-6 font-serif-content text-base leading-relaxed whitespace-pre-line">
                 {translation.text}
               </div>
             </section>
@@ -379,7 +379,7 @@ export default async function DocumentPage({
           {canEdit ? (
             <Link
               href={`/doc/${doc.id}/edit`}
-              className="block w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors"
+              className="block w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors mt-8 md:mt-0"
             >
               {isNote ? 'Edit Note' : 'Edit Scan'}
             </Link>

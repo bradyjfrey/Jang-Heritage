@@ -45,7 +45,7 @@ export default async function TagsPage() {
     <>
       <Chrome user={user} />
 
-      <main className="max-w-5xl mx-auto px-8 py-10">
+      <main className="max-w-5xl mx-auto px-4 py-8 md:px-8 md:py-10">
         <div className="mb-6">
           <h1 className="font-serif-content text-2xl mb-1">Tags</h1>
           <p className="text-sm text-ink-soft">

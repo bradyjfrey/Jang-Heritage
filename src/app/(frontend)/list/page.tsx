@@ -279,14 +279,14 @@ export default async function ListPage({
         active={types.length === 1 && types[0] === 'note' ? 'notes' : 'scans'}
       />
 
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <FilterSidebar
           selectedTypes={types}
           typeCounts={typeCounts}
           translators={translatorOptions}
         />
 
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 md:p-8">
           <ListControls
             total={result.totalDocs}
             sort={params.sort || 'recent'}
@@ -306,9 +306,18 @@ export default async function ListPage({
               No documents match the current filters.
             </div>
           ) : view === 'table' ? (
-            <TableView docs={result.docs} />
+            <>
+              <div className="md:hidden grid grid-cols-2 gap-2">
+                {result.docs.map((doc) => (
+                  <Card key={doc.id} doc={doc} />
+                ))}
+              </div>
+              <div className="hidden md:block">
+                <TableView docs={result.docs} />
+              </div>
+            </>
           ) : (
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
               {result.docs.map((doc) => (
                 <Card key={doc.id} doc={doc} />
               ))}
@@ -333,11 +342,11 @@ function TableView({ docs }: { docs: Document[] }) {
         <thead className="bg-paper-warm border-b border-[color:var(--border-soft)] text-ink-soft">
           <tr className="text-left">
             <th className="px-3 py-2.5 w-14"></th>
-            <th className="px-3 py-2.5 font-medium">Title</th>
-            <th className="px-3 py-2.5 font-medium w-24">Type</th>
+            <th className="px-3 py-2.5 font-medium hidden md:table-cell">Title</th>
+            <th className="px-3 py-2.5 font-medium w-24 hidden md:table-cell">Type</th>
             <th className="px-3 py-2.5 font-medium w-32">Date</th>
-            <th className="px-3 py-2.5 font-medium w-64">Tags</th>
-            <th className="px-3 py-2.5 font-medium w-28">Updated</th>
+            <th className="px-3 py-2.5 font-medium w-64 hidden md:table-cell">Tags</th>
+            <th className="px-3 py-2.5 font-medium w-28 hidden md:table-cell">Updated</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[color:var(--border-soft)]">
@@ -381,14 +390,14 @@ function TableRow({ doc }: { doc: Document }) {
           )}
         </Link>
       </td>
-      <td className="px-3 py-2 font-serif-content text-base">
+      <td className="px-3 py-2 font-serif-content text-base hidden md:table-cell">
         <Link href={`/doc/${doc.id}`} className="hover:text-seal">
           {doc.title}
         </Link>
       </td>
-      <td className="px-3 py-2 text-ink-soft">{doc.documentType}</td>
+      <td className="px-3 py-2 text-ink-soft hidden md:table-cell">{doc.documentType}</td>
       <td className="px-3 py-2 text-ink-soft">{docDate}</td>
-      <td className="px-3 py-2">
+      <td className="px-3 py-2 hidden md:table-cell">
         <div className="flex flex-wrap gap-1 items-center">
           {tags.slice(0, 3).map((tag) => (
             <span key={tag.id} className="chip">
@@ -400,7 +409,7 @@ function TableRow({ doc }: { doc: Document }) {
           ) : null}
         </div>
       </td>
-      <td className="px-3 py-2 text-ink-soft">{updated}</td>
+      <td className="px-3 py-2 text-ink-soft hidden md:table-cell">{updated}</td>
     </tr>
   )
 }

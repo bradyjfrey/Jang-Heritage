@@ -35,13 +35,12 @@ export function TagEditor({
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Debounced suggestion fetch.
+  // Debounced suggestion fetch. We only fetch when query has content; the
+  // dropdown render is already gated by `trimmedQuery` (line ~269), so
+  // empty-query renders nothing without us having to reset state here.
   useEffect(() => {
     const q = query.trim()
-    if (!q) {
-      setSuggestions([])
-      return
-    }
+    if (!q) return
     let cancelled = false
     const handle = setTimeout(async () => {
       try {

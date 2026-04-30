@@ -116,9 +116,9 @@ export default async function HomePage() {
     <>
       <Chrome user={user} active="home" />
 
-      <main className="px-10 py-10 max-w-6xl mx-auto">
-        <div className="mb-10">
-          <h1 className="font-serif-content text-3xl mb-1">
+      <main className="px-4 py-8 md:px-10 md:py-10 max-w-6xl mx-auto">
+        <div className="mb-6 md:mb-10">
+          <h1 className="font-serif-content text-2xl md:text-3xl mb-1">
             Welcome back, {firstName}
           </h1>
           <p className="text-ink-soft">
@@ -126,7 +126,21 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-12">
+        <p className="md:hidden text-xs text-ink-soft mb-6 leading-relaxed">
+          <strong className="text-ink font-medium">{totalDocs.totalDocs}</strong>{' '}
+          entries{' · '}
+          <strong className="text-ink font-medium">
+            {transcribedCount.totalDocs}/{translatableDocsCount.totalDocs}
+          </strong>{' '}
+          transcribed{' · '}
+          <strong className="text-ink font-medium">
+            {translatedCount.totalDocs}/{translatableDocsCount.totalDocs}
+          </strong>{' '}
+          translated{' · last edit '}
+          <strong className="text-ink font-medium">{lastEditLabel}</strong>
+        </p>
+
+        <div className="hidden md:grid md:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-12">
           <StatCard label="Total entries" value={String(totalDocs.totalDocs)} />
           <StatCard
             label="Transcribed"
@@ -153,13 +167,13 @@ export default async function HomePage() {
           </Link>
         </div>
         {recentEdits.docs.length > 0 ? (
-          <div className="grid grid-cols-3 gap-5 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-8 md:mb-12">
             {recentEdits.docs.slice(0, 3).map((doc) => (
               <RecentCard key={doc.id} doc={doc} />
             ))}
           </div>
         ) : (
-          <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-8 text-center text-ink-soft mb-12">
+          <div className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-8 text-center text-ink-soft mb-8 md:mb-12">
             No documents yet. Start with a{' '}
             <Link href="/add/note" className="text-seal underline">
               new note
@@ -172,14 +186,18 @@ export default async function HomePage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-6">
-          <NeedsTranslationCard
-            docs={needsTranslationResult.docs}
-            untranslatedCount={
-              translatableDocsCount.totalDocs - translatedDocIds.size
-            }
-          />
-          <PinnedCard docs={pinnedResult.docs} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="order-2 md:order-1">
+            <NeedsTranslationCard
+              docs={needsTranslationResult.docs}
+              untranslatedCount={
+                translatableDocsCount.totalDocs - translatedDocIds.size
+              }
+            />
+          </div>
+          <div className="order-1 md:order-2">
+            <PinnedCard docs={pinnedResult.docs} />
+          </div>
         </div>
       </main>
     </>
@@ -261,7 +279,7 @@ function NeedsTranslationCard({
   untranslatedCount: number
 }) {
   return (
-    <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+    <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5 h-full">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-serif-content text-base">Needs Translation</h3>
         <span className="text-xs text-ink-soft">
@@ -286,7 +304,7 @@ function NeedsTranslationCard({
         </ul>
       ) : (
         <div className="text-sm text-ink-soft py-4 text-center">
-          Everything's translated.
+          Everything&apos;s translated.
         </div>
       )}
     </section>
@@ -295,7 +313,7 @@ function NeedsTranslationCard({
 
 function PinnedCard({ docs }: { docs: Document[] }) {
   return (
-    <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5">
+    <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5 h-full">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-serif-content text-base flex items-center gap-2">
           <svg className="w-4 h-4 text-seal" viewBox="0 0 24 24" fill="currentColor">

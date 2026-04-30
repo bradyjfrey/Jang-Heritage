@@ -1,9 +1,10 @@
-/* Viewport-locked editor: 56px header + main fills the rest of 100vh.
-   The shell pins itself (no body-level overflow:hidden needed). */
+/* Viewport-locked editor: 56px header + main fills the rest of 100dvh.
+   The shell pins itself (no body-level overflow:hidden needed). 100dvh
+   accounts for iOS Safari's chrome bars; 100vh would overshoot. */
 .editShell {
   display: grid;
   grid-template-rows: 56px 1fr;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 .editMain {
@@ -26,6 +27,7 @@
   border-bottom: 1px solid var(--border-soft);
   background: var(--paper-warm);
   font-size: 0.8125rem;
+  min-height: 3rem;
 }
 .paneBody {
   padding: 1.5rem;
@@ -140,4 +142,61 @@
 }
 .noteEditor:focus {
   background: rgba(255, 255, 255, 0.55);
+}
+
+/* Phones (<768px): switch from viewport-locked + internal scroll to
+   page-scroll. Stacks both editor variants vertically with auto-sized rows
+   and makes pane headers sticky so users always know which pane they're in
+   while page-scrolling. The scan-variant 20/40/40 grid percentages from the
+   <1280px block above are overridden here with auto rows since the shell
+   no longer has a fixed height to slice. */
+@media (max-width: 767.98px) {
+  .editShell {
+    display: block;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .editMain,
+  .pane,
+  .paneBody {
+    overflow: visible;
+  }
+  .paneBody {
+    padding: 1rem;
+  }
+  .editMain {
+    grid-template-rows: auto auto auto;
+  }
+  .editMain.noteVariant {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+  .paneHeader {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .noteMeasure {
+    height: auto;
+  }
+  .noteEditor {
+    min-height: 50dvh;
+  }
+  .editor {
+    min-height: 40dvh;
+  }
+  .imagePane > .scrollArea {
+    overflow: visible;
+  }
+}
+
+/* Tablets/small laptops (768-1279): note variant goes single-column with
+   each pane taking half the viewport-locked shell height. Scan editor at
+   this width keeps its original 20/40/40 stacked behavior. */
+@media (min-width: 768px) and (max-width: 1279.98px) {
+  .editMain.noteVariant {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
 }

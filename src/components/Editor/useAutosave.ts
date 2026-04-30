@@ -21,7 +21,14 @@ export function useAutosave<T>({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSavedRef = useRef(value)
   const onSaveRef = useRef(onSave)
-  onSaveRef.current = onSave
+
+  // Keep onSaveRef in sync with the latest onSave so debounced/flush
+  // callbacks always invoke the freshest closure. useEffect (no deps) runs
+  // after every render commit; the ref is up-to-date well before the 3s
+  // debounce timer fires.
+  useEffect(() => {
+    onSaveRef.current = onSave
+  })
 
   useEffect(() => {
     if (Object.is(value, lastSavedRef.current)) return

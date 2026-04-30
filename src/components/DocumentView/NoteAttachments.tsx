@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog'
 import type { Media } from '@/payload-types'
@@ -46,10 +46,24 @@ export function NoteAttachments({
         'this attachment'
       : ''
 
-  useEffect(() => {
+  // Resync local state when the server rerenders with newer initial values
+  // (other sections saved, bumped updatedAt, etc). Derived-state pattern:
+  // guarded setState during render, not via effect.
+  const [trackedInitial, setTrackedInitial] = useState({
+    attachments: initialAttachments,
+    updatedAt: initialUpdatedAt,
+  })
+  if (
+    trackedInitial.attachments !== initialAttachments ||
+    trackedInitial.updatedAt !== initialUpdatedAt
+  ) {
+    setTrackedInitial({
+      attachments: initialAttachments,
+      updatedAt: initialUpdatedAt,
+    })
     setAttachments(initialAttachments)
     setUpdatedAt(initialUpdatedAt)
-  }, [initialAttachments, initialUpdatedAt])
+  }
 
   async function persist(nextIds: number[]) {
     if (documentId == null) return

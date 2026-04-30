@@ -40,6 +40,27 @@ body {
   border: 1px solid rgba(168,132,62,0.25);
 }
 
+/* iOS Safari auto-zooms the page whenever a form field is focused with a
+   font-size below 16px. We override every input/select/textarea on mobile
+   to 16px to prevent that. The editor textareas set their font-size via
+   inline style (user-controlled slider), and inline styles outrank
+   stylesheet rules — so this rule does not affect those. */
+@media (max-width: 767.98px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="password"],
+  input[type="date"],
+  input:not([type]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 /* Pill button (small) */
 .pill-btn {
   font-size: 0.75rem;
@@ -50,6 +71,13 @@ body {
   color: var(--ink-soft);
 }
 .pill-btn:hover { background: var(--paper-warm); color: var(--ink); }
+/* Bump tap target on mobile (closer to iOS HIG 44px minimum). */
+@media (max-width: 767.98px) {
+  .pill-btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+}
 
 /* Subtle scrollbar polish for any element with .scroll-area */
 .scroll-area::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -106,7 +134,12 @@ mark.snippet {
   border: 0; border-top: 1px solid var(--border-soft); margin: 1.5rem 0;
 }
 .md-body table {
-  border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
 }
 .md-body th, .md-body td {
   border: 1px solid var(--border-soft);

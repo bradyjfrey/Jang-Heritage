@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'conflict'
@@ -27,10 +27,23 @@ export function NotesEditor({
   const [updatedAt, setUpdatedAt] = useState(initialUpdatedAt)
   const [status, setStatus] = useState<SaveStatus>('idle')
 
-  useEffect(() => {
+  // Resync local state when the server rerenders with newer initial values.
+  // Derived-state pattern: guarded setState during render, not via effect.
+  const [trackedInitial, setTrackedInitial] = useState({
+    notes: initialNotes,
+    updatedAt: initialUpdatedAt,
+  })
+  if (
+    trackedInitial.notes !== initialNotes ||
+    trackedInitial.updatedAt !== initialUpdatedAt
+  ) {
+    setTrackedInitial({
+      notes: initialNotes,
+      updatedAt: initialUpdatedAt,
+    })
     setSavedText(initialNotes)
     setUpdatedAt(initialUpdatedAt)
-  }, [initialNotes, initialUpdatedAt])
+  }
 
   const dirty = text !== savedText
 
