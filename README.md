@@ -24,7 +24,7 @@ In rough order:
 
 - **Not enterprise translation software.** No translation memory, no team workflows, no review pipelines. One archive, a small handful of trusted users.
 - **Not OCR.** Chinese OCR (especially for handwritten or vertically set text) is not currently good enough to justify the cost in terms of quality. Everything is transcribed and translated by humans (although AI systems like DeepSeek do a great job with typed Chinese, including colloquial and regional usage).
-- **Not a genealogy platform.** It does not replace Ancestry, MyHeritage, or FamilySearch. It complements them: those tell you who your ancestors were; this lets you read what they wrote.
+- **Not a genealogy platform.** It does not replace Ancestry, MyHeritage, FamilySearch, or similar applications. It complements them: those tell you who your ancestors were; this lets you read what they wrote.
 
 ## Stack
 
