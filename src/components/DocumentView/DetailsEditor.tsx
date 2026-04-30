@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 type SaveStatus = 'idle' | 'saving' | 'error' | 'conflict'
@@ -56,10 +56,13 @@ export function DetailsEditor({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Keep local state in sync if the server rerenders with newer values
-  // (e.g., another section saved and bumped updatedAt).
-  useEffect(() => {
+  // (e.g., another section saved and bumped updatedAt). Derived-state
+  // pattern: guarded setState during render, no cascading effect render.
+  const [trackedUpdatedAt, setTrackedUpdatedAt] = useState(initialUpdatedAt)
+  if (initialUpdatedAt !== trackedUpdatedAt) {
+    setTrackedUpdatedAt(initialUpdatedAt)
     setUpdatedAt(initialUpdatedAt)
-  }, [initialUpdatedAt])
+  }
 
   const isNote = type === 'note'
 

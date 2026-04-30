@@ -30,7 +30,7 @@ export function ListControls({ total, sort, per, view, activeTag }: Props) {
   )
 
   return (
-    <div className="flex items-end justify-between mb-6">
+    <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
       <div>
         <h1 className="font-serif-content text-2xl mb-1">Documents</h1>
         <p className="text-sm text-ink-soft">
@@ -50,7 +50,7 @@ export function ListControls({ total, sort, per, view, activeTag }: Props) {
           </div>
         ) : null}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <select
           value={sort}
           onChange={(e) => update('sort', e.target.value === 'recent' ? null : e.target.value)}
@@ -70,7 +70,7 @@ export function ListControls({ total, sort, per, view, activeTag }: Props) {
           <option value="48">48 per page</option>
           <option value="96">96 per page</option>
         </select>
-        <div className="flex border border-[color:var(--border-soft)] rounded-md overflow-hidden">
+        <div className="hidden md:flex border border-[color:var(--border-soft)] rounded-md overflow-hidden">
           <button
             type="button"
             onClick={() => update('view', null)}

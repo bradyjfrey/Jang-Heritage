@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Document, Media, User } from '@/payload-types'
 
 import { NoteAttachments } from '@/components/DocumentView/NoteAttachments'
@@ -36,7 +36,10 @@ export function NoteEditor({ document: doc, user }: Props) {
 
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [savedAt, setSavedAt] = useState<number | null>(null)
-  const [savedAgoLabel, setSavedAgoLabel] = useState('')
+  // `now` is updated every 5s by the effect below while in 'saved' status,
+  // so the derived `savedAgoLabel` keeps ticking. We can't call Date.now()
+  // directly in render — it's impure and the React 19 hooks lint flags it.
+  const [now, setNow] = useState(0)
 
   const [bodySize, setBodySize] = useState(16)
 
@@ -54,15 +57,17 @@ export function NoteEditor({ document: doc, user }: Props) {
     body: doc?.body || '',
   })
   // Latest title/body — kept in a ref so the debounced save reads fresh
-  // values without re-binding the timer.
+  // values without re-binding the timer. Same for docId / docUpdatedAt.
+  // Refs are synced via useEffect so the assignment doesn't happen during
+  // render (which the React 19 rules-of-hooks lint flags).
   const valuesRef = useRef({ title, body })
-  valuesRef.current = { title, body }
-
-  // Mirror docId / docUpdatedAt into refs for the same reason.
   const docIdRef = useRef<number | null>(docId)
-  docIdRef.current = docId
   const docUpdatedAtRef = useRef<string | null>(docUpdatedAt)
-  docUpdatedAtRef.current = docUpdatedAt
+  useEffect(() => {
+    valuesRef.current = { title, body }
+    docIdRef.current = docId
+    docUpdatedAtRef.current = docUpdatedAt
+  })
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const flushRef = useRef<(() => void) | null>(null)
@@ -171,23 +176,28 @@ export function NoteEditor({ document: doc, user }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, body])
 
+  // Update `now` every 5s while in 'saved' status so `savedAgoLabel` stays
+  // fresh. Date.now() is read only inside the effect's deferred / interval
+  // callbacks, never during render. The initial setTimeout(0) seeds `now`
+  // after commit so the label appears immediately rather than waiting 5s.
   useEffect(() => {
-    if (saveStatus !== 'saved' || savedAt == null) {
-      setSavedAgoLabel('')
-      return
+    if (saveStatus !== 'saved' || savedAt == null) return
+    const tid = setTimeout(() => setNow(Date.now()), 0)
+    const id = setInterval(() => setNow(Date.now()), 5000)
+    return () => {
+      clearTimeout(tid)
+      clearInterval(id)
     }
-    const tick = () => {
-      const seconds = Math.max(0, Math.floor((Date.now() - savedAt) / 1000))
-      if (seconds < 5) setSavedAgoLabel('Saved just now')
-      else if (seconds < 60) setSavedAgoLabel(`Saved ${seconds}s ago`)
-      else if (seconds < 3600)
-        setSavedAgoLabel(`Saved ${Math.floor(seconds / 60)}m ago`)
-      else setSavedAgoLabel('Saved')
-    }
-    tick()
-    const id = setInterval(tick, 5000)
-    return () => clearInterval(id)
   }, [saveStatus, savedAt])
+
+  const savedAgoLabel = useMemo(() => {
+    if (saveStatus !== 'saved' || savedAt == null || now === 0) return ''
+    const seconds = Math.max(0, Math.floor((now - savedAt) / 1000))
+    if (seconds < 5) return 'Saved just now'
+    if (seconds < 60) return `Saved ${seconds}s ago`
+    if (seconds < 3600) return `Saved ${Math.floor(seconds / 60)}m ago`
+    return 'Saved'
+  }, [saveStatus, savedAt, now])
 
   useEffect(() => {
     function handler(e: BeforeUnloadEvent) {
@@ -211,9 +221,46 @@ export function NoteEditor({ document: doc, user }: Props) {
   const isAlertStatus = saveStatus === 'error' || saveStatus === 'conflict'
   const backHref = docId != null ? `/doc/${docId}` : '/'
 
+  const statusStyle = isAlertStatus
+    ? { color: 'var(--seal)' }
+    : saveStatus === 'idle'
+      ? { opacity: 0.55 }
+      : undefined
+  const dotStyle = isAlertStatus
+    ? { background: 'var(--seal)' }
+    : saveStatus === 'idle'
+      ? { background: 'var(--ink-faint)' }
+      : undefined
+
   return (
     <div className={styles.editShell}>
-      <header className="border-b border-[color:var(--border-soft)] bg-paper flex items-center px-4 gap-4">
+      {/* Mobile (<md/768px): two-row header — Back + status on row 1, title on row 2. Avatar dropped. */}
+      <header className="md:hidden border-b border-[color:var(--border-soft)] bg-paper">
+        <div className="flex items-center px-4 py-2 gap-3">
+          <Link
+            href={backHref}
+            className="text-ink-soft hover:text-ink text-sm flex items-center gap-1"
+          >
+            <span>←</span> Back
+          </Link>
+          <span className={`${status.cls} ml-auto`} style={statusStyle}>
+            <span className="dot" style={dotStyle}></span>
+            {status.text}
+          </span>
+        </div>
+        <div className="px-4 pb-6">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => flushRef.current?.()}
+            placeholder="Untitled note. Add a title or come back to it later."
+            className="w-full bg-transparent border-0 font-serif-content text-lg py-1 focus:outline-none focus:bg-white focus:rounded focus:px-2"
+          />
+        </div>
+      </header>
+      {/* md+ (≥768px): original single-row desktop header. */}
+      <header className="hidden md:flex h-14 border-b border-[color:var(--border-soft)] bg-paper items-center px-4 gap-4">
         <Link
           href={backHref}
           className="text-ink-soft hover:text-ink text-sm flex items-center gap-1"
@@ -231,30 +278,10 @@ export function NoteEditor({ document: doc, user }: Props) {
             className="w-full max-w-xl bg-transparent border-0 font-serif-content text-lg focus:outline-none focus:bg-white focus:rounded focus:px-2 focus:py-0.5"
           />
         </div>
-        <span
-          className={status.cls}
-          style={
-            isAlertStatus
-              ? { color: 'var(--seal)' }
-              : saveStatus === 'idle'
-                ? { opacity: 0.55 }
-                : undefined
-          }
-        >
-          <span
-            className="dot"
-            style={
-              isAlertStatus
-                ? { background: 'var(--seal)' }
-                : saveStatus === 'idle'
-                  ? { background: 'var(--ink-faint)' }
-                  : undefined
-            }
-          ></span>
+        <span className={status.cls} style={statusStyle}>
+          <span className="dot" style={dotStyle}></span>
           {status.text}
         </span>
-        <div className="h-6 w-px bg-[color:var(--border-soft)]"></div>
-        <button className="pill-btn">History</button>
         <div className="w-8 h-8 rounded-full bg-seal text-white flex items-center justify-center text-sm font-medium">
           {userInitial}
         </div>
@@ -266,16 +293,13 @@ export function NoteEditor({ document: doc, user }: Props) {
             <div className="flex items-center gap-2">
               <span className="text-base">Note</span>
               <span className="text-ink-faint">·</span>
-              <span className="text-ink-soft">
-                Mixed language,{' '}
-                <Link
-                  href="/markdown"
-                  target="_blank"
-                  className="text-seal hover:text-black underline underline-offset-2"
-                >
-                  markdown supported
-                </Link>
-              </span>
+              <Link
+                href="/markdown"
+                target="_blank"
+                className="text-seal hover:text-black underline underline-offset-2"
+              >
+                Markdown supported
+              </Link>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5" title="Adjust text size">

@@ -25,7 +25,7 @@ export default async function SettingsPage() {
   return (
     <>
       <Chrome user={user} />
-      <div className="max-w-3xl mx-auto px-8 py-10">
+      <div className="max-w-3xl mx-auto px-4 py-8 md:px-8 md:py-10">
         <h1 className="font-serif-content text-2xl mb-1">Settings</h1>
         <p className="text-ink-soft text-sm mb-8">
           Edit how you appear across the app. Email and role are managed by

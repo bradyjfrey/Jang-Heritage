@@ -25,7 +25,7 @@ export default async function AddPage() {
   return (
     <>
       <Chrome user={user} active="scans" />
-      <main className="max-w-3xl mx-auto px-8 py-12">
+      <main className="max-w-3xl mx-auto px-4 py-8 md:px-8 md:py-12">
         <div className="mb-8 text-center">
           <h1 className="font-serif-content text-3xl mb-2">New scan</h1>
           <p className="text-ink-soft">

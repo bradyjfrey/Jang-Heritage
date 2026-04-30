@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 // Refine sidebar for /search. URL-param-driven so filter state survives reload
 // and is shareable. Defaults are "all selected" — when every option in a group
@@ -126,20 +126,38 @@ export function RefineSidebar({ tags, translators, availableTypes }: Props) {
     })
   }
 
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   return (
-    <aside className="w-72 shrink-0 border-r border-[color:var(--border-soft)] bg-paper p-6 sticky top-32 self-start max-h-[calc(100vh-8rem)] overflow-auto">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="font-serif-content text-lg">Refine</h2>
-        {hasAnyFilter ? (
-          <button
-            type="button"
-            onClick={clearAll}
-            className="text-xs text-seal hover:underline"
-          >
-            Clear
-          </button>
-        ) : null}
-      </div>
+    <aside className="border-b md:border-b-0 md:border-r border-[color:var(--border-soft)] bg-paper md:w-72 md:shrink-0 md:p-6 md:sticky md:top-32 md:self-start md:max-h-[calc(100dvh-8rem)] md:overflow-auto">
+      <button
+        type="button"
+        onClick={() => setMobileOpen((o) => !o)}
+        className="md:hidden w-full flex items-center justify-between px-4 py-3.5 text-left"
+        aria-expanded={mobileOpen}
+        aria-controls="refine-content"
+      >
+        <span className="font-serif-content text-lg">
+          Refine{hasAnyFilter ? ' · active' : ''}
+        </span>
+        <span className="text-ink-faint text-sm">{mobileOpen ? '▲' : '▼'}</span>
+      </button>
+      <div
+        id="refine-content"
+        className={`${mobileOpen ? 'block' : 'hidden'} md:block px-4 pb-4 md:p-0`}
+      >
+        <div className="hidden md:flex items-center justify-between mb-5">
+          <h2 className="font-serif-content text-lg">Refine</h2>
+          {hasAnyFilter ? (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="text-xs text-seal hover:underline"
+            >
+              Clear
+            </button>
+          ) : null}
+        </div>
 
       <div className="space-y-6 text-sm">
         <Group label="Match in">
@@ -258,6 +276,17 @@ export function RefineSidebar({ tags, translators, availableTypes }: Props) {
             ))}
           </select>
         </Group>
+
+        {hasAnyFilter ? (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="md:hidden text-xs text-seal hover:underline"
+          >
+            Clear filters
+          </button>
+        ) : null}
+      </div>
       </div>
     </aside>
   )

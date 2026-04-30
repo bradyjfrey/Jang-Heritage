@@ -530,7 +530,7 @@ export default async function SearchPage({
       <Chrome user={user} />
 
       {!rawQuery ? (
-        <main className="max-w-5xl mx-auto px-8 py-10">
+        <main className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">
           <div className="text-ink-soft text-center py-16">
             <p className="font-serif-content text-2xl mb-2">Search</p>
             <p>
@@ -540,14 +540,14 @@ export default async function SearchPage({
           </div>
         </main>
       ) : (
-        <div className="flex">
+        <div className="flex flex-col md:flex-row">
           <RefineSidebar
             tags={tagOptions}
             translators={translatorOptions}
             availableTypes={[...availableTypes]}
           />
-          <main className="flex-1 px-8 py-10 max-w-5xl">
-            <div className="flex items-end justify-between mb-6 gap-4">
+          <main className="flex-1 px-4 md:px-8 py-6 md:py-10 max-w-5xl">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6 md:gap-4">
               <div>
                 <h1 className="font-serif-content text-2xl mb-1">
                   {totalResults === 1
@@ -630,7 +630,7 @@ function ResultRow({
       href={`/doc/${doc.id}`}
       className="flex gap-4 bg-surface border border-[color:var(--border-soft)] rounded-lg p-4 hover:border-gold transition"
     >
-      <div className="w-16 h-20 rounded overflow-hidden border border-[color:var(--border-soft)] relative shrink-0">
+      <div className="w-12 h-16 md:w-16 md:h-20 rounded overflow-hidden border border-[color:var(--border-soft)] relative shrink-0">
         {showImage ? (
           <img
             src={firstScan.url || ''}

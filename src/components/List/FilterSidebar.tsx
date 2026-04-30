@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 const ALL_TYPES = [
   'letter',
@@ -70,14 +70,30 @@ export function FilterSidebar({
     router.push('/list')
   }, [router])
 
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   return (
-    <aside className="w-72 border-r border-[color:var(--border-soft)] bg-paper p-6 sticky top-32 self-start min-h-[calc(100vh-8rem)] overflow-auto">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="font-serif-content text-lg">Filters</h2>
-        <button onClick={clearFilters} className="text-xs text-seal hover:underline">
-          Clear
-        </button>
-      </div>
+    <aside className="border-b md:border-b-0 md:border-r border-[color:var(--border-soft)] bg-paper md:w-72 md:p-6 md:sticky md:top-32 md:self-start md:min-h-[calc(100dvh-8rem)] md:overflow-auto">
+      <button
+        type="button"
+        onClick={() => setMobileOpen((o) => !o)}
+        className="md:hidden w-full flex items-center justify-between px-4 py-3.5 text-left"
+        aria-expanded={mobileOpen}
+        aria-controls="filter-content"
+      >
+        <span className="font-serif-content text-lg">Filters</span>
+        <span className="text-ink-faint text-sm">{mobileOpen ? '▲' : '▼'}</span>
+      </button>
+      <div
+        id="filter-content"
+        className={`${mobileOpen ? 'block' : 'hidden'} md:block px-4 pb-4 md:p-0`}
+      >
+        <div className="hidden md:flex items-center justify-between mb-5">
+          <h2 className="font-serif-content text-lg">Filters</h2>
+          <button onClick={clearFilters} className="text-xs text-seal hover:underline">
+            Clear
+          </button>
+        </div>
 
       <div className="space-y-6 text-sm">
         <div>
@@ -154,6 +170,15 @@ export function FilterSidebar({
             ))}
           </select>
         </div>
+
+        <button
+          type="button"
+          onClick={clearFilters}
+          className="md:hidden text-xs text-seal hover:underline"
+        >
+          Clear filters
+        </button>
+      </div>
       </div>
     </aside>
   )
