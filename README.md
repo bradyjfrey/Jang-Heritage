@@ -15,7 +15,6 @@ Rebuild it as you need. I hope it helps you and the ones you love.
 ## Who this might be useful for
 
 In rough order:
-
 1. Me, day to day. The app is built for the way I work, not for a generic audience.
 2. Translators collaborating with me for review and transcription.
 3. My family, who can read or browse what I've translated.
