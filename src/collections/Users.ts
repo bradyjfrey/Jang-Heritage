@@ -34,6 +34,7 @@ export const Users: CollectionConfig = {
     // expires on its own. With useSessions:true, Payload's JWT strategy
     // requires a sid claim and a users_sessions row; we have neither.
     useSessions: false,
+    tokenExpiration: 60 * 60 * 24 * 14,
     // disableLocalStrategy also strips Payload's built-in JWT cookie reader,
     // so we re-register it ourselves. The cookie is minted by our Google
     // OAuth callback at /api/auth/google/callback.
