@@ -62,12 +62,23 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
   const [chineseSize, setChineseSize] = useState(16)
   const [englishSize, setEnglishSize] = useState(16)
 
-  const scanRefs = Array.isArray(doc.scans) ? doc.scans : []
-  const scans = scanRefs.filter(
+  const initialScans = (Array.isArray(doc.scans) ? doc.scans : []).filter(
     (s): s is Media => typeof s === 'object' && s !== null,
   )
+  const [scans, setScans] = useState<Media[]>(initialScans)
   const [scanIndex, setScanIndex] = useState(0)
   const currentScan = scans[scanIndex]
+
+  // Adding scans to an existing document: upload each file to Media (same
+  // flow as ScanDropzone), then PATCH the document's scans array. This is
+  // what makes the dropzone's "you can add more scans after" promise true.
+  const addScanInputRef = useRef<HTMLInputElement | null>(null)
+  const [scanUpload, setScanUpload] = useState<{
+    status: 'idle' | 'uploading' | 'error'
+    done: number
+    total: number
+    error: string | null
+  }>({ status: 'idle', done: 0, total: 0, error: null })
 
   const [zoom, setZoom] = useState(100)
   const zoomOut = () => setZoom((z) => Math.max(25, z - 25))
@@ -177,6 +188,59 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
         if (updated?.updatedAt) setTranslationUpdatedAt(updated.updatedAt)
       }
     })
+  }
+
+  // Upload one or more files to Media, then append them to this document's
+  // scans. Persists the full (existing + new) array so the order is explicit,
+  // then jumps the viewer to the first newly added scan.
+  async function addScans(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return
+    const files = Array.from(fileList)
+    setScanUpload({ status: 'uploading', done: 0, total: files.length, error: null })
+    try {
+      const uploaded: Media[] = []
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const fd = new FormData()
+        fd.append('file', file)
+        fd.append('_payload', JSON.stringify({ alt: file.name || 'Untitled scan' }))
+        const res = await fetch('/api/media', {
+          method: 'POST',
+          credentials: 'include',
+          body: fd,
+        })
+        if (!res.ok) {
+          throw new Error(`Upload failed for ${file.name} (${res.status})`)
+        }
+        const json = await res.json()
+        const created = (json?.doc ?? json) as Media
+        if (created?.id != null) uploaded.push(created)
+        setScanUpload((s) => ({ ...s, done: i + 1 }))
+      }
+
+      const firstNewIndex = scans.length
+      const newScans = [...scans, ...uploaded]
+      const json = await patch(
+        `/api/documents/${doc.id}`,
+        { scans: newScans.map((s) => s.id) },
+        docUpdatedAt,
+      )
+      const updated = json?.doc ?? json
+      if (updated?.updatedAt) setDocUpdatedAt(updated.updatedAt)
+
+      setScans(newScans)
+      setScanIndex(firstNewIndex)
+      setScanUpload({ status: 'idle', done: 0, total: 0, error: null })
+    } catch (err) {
+      console.error('Add scan failed', err)
+      const message =
+        err instanceof Error && err.message === 'CONFLICT'
+          ? 'Document changed elsewhere — refresh and try again'
+          : err instanceof Error
+            ? err.message
+            : 'Upload failed'
+      setScanUpload({ status: 'error', done: 0, total: 0, error: message })
+    }
   }
 
   useAutosave({ value: title, onSave: saveTitle, flushRef: flushTitle })
@@ -321,6 +385,38 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
               </button>
             </div>
             <div className="flex items-center gap-1.5">
+              <input
+                ref={addScanInputRef}
+                type="file"
+                accept="image/jpeg,image/tiff,image/tif,image/png"
+                multiple
+                className="sr-only"
+                disabled={scanUpload.status === 'uploading'}
+                onChange={(e) => {
+                  void addScans(e.target.files)
+                  e.target.value = ''
+                }}
+              />
+              <button
+                className="pill-btn"
+                onClick={() => addScanInputRef.current?.click()}
+                disabled={scanUpload.status === 'uploading'}
+                title={
+                  scanUpload.status === 'error'
+                    ? scanUpload.error || 'Upload failed'
+                    : 'Add another scan to this document'
+                }
+                style={
+                  scanUpload.status === 'error' ? { color: 'var(--seal)' } : undefined
+                }
+              >
+                {scanUpload.status === 'uploading'
+                  ? `Uploading ${scanUpload.done}/${scanUpload.total}…`
+                  : scanUpload.status === 'error'
+                    ? 'Retry add'
+                    : '+ Add scan'}
+              </button>
+              <div className="h-5 w-px bg-[color:var(--border-soft)] mx-0.5"></div>
               <button
                 className="pill-btn"
                 onClick={zoomOut}
