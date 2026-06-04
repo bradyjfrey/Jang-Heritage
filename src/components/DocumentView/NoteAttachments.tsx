@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog'
 import type { Media } from '@/payload-types'
@@ -34,7 +34,18 @@ export function NoteAttachments({
 }: Props) {
   const router = useRouter()
   const [attachments, setAttachments] = useState<Media[]>(initialAttachments)
-  const [updatedAt, setUpdatedAt] = useState(initialUpdatedAt)
+  // Always-fresh copy of the concurrency token, read at send-time so an
+  // in-flight save uses the latest value (e.g. after NoteEditor's autosave
+  // bumps the document) instead of a stale closure capture. The promise
+  // chain serializes document PATCHes so two attachment writes can't race.
+  const updatedAtRef = useRef(initialUpdatedAt)
+  const writeChain = useRef<Promise<unknown>>(Promise.resolve())
+  // Keep the ref in sync with the prop after commit — this is how we pick up
+  // a token bumped by NoteEditor's own autosave. (persist writes the ref
+  // directly from its server response, which is async, not render.)
+  useEffect(() => {
+    updatedAtRef.current = initialUpdatedAt
+  }, [initialUpdatedAt])
   const [status, setStatus] = useState<SaveStatus>('idle')
   const [error, setError] = useState<string | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
@@ -62,41 +73,46 @@ export function NoteAttachments({
       updatedAt: initialUpdatedAt,
     })
     setAttachments(initialAttachments)
-    setUpdatedAt(initialUpdatedAt)
   }
 
-  async function persist(nextIds: number[]) {
-    if (documentId == null) return
+  function persist(nextIds: number[]) {
+    if (documentId == null) return Promise.resolve()
     setStatus('saving')
-    try {
-      const res = await fetch(`/api/documents/${documentId}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-If-Unmodified-Since': updatedAt,
-        },
-        body: JSON.stringify({ attachments: nextIds }),
-      })
-      if (res.status === 409) {
-        setStatus('conflict')
-        return
-      }
-      if (!res.ok) {
+    const run = writeChain.current.catch(() => {}).then(async () => {
+      try {
+        const res = await fetch(`/api/documents/${documentId}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-If-Unmodified-Since': updatedAtRef.current,
+          },
+          body: JSON.stringify({ attachments: nextIds }),
+        })
+        if (res.status === 409) {
+          setStatus('conflict')
+          return
+        }
+        if (!res.ok) {
+          setStatus('error')
+          setError(`Save failed (${res.status})`)
+          return
+        }
+        const json = await res.json()
+        const updated = json?.doc ?? json
+        if (updated?.updatedAt) {
+          updatedAtRef.current = updated.updatedAt
+        }
+        setStatus('idle')
+        router.refresh()
+      } catch (err) {
+        console.error('Attachments save failed', err)
         setStatus('error')
-        setError(`Save failed (${res.status})`)
-        return
+        setError('Network error')
       }
-      const json = await res.json()
-      const updated = json?.doc ?? json
-      if (updated?.updatedAt) setUpdatedAt(updated.updatedAt)
-      setStatus('idle')
-      router.refresh()
-    } catch (err) {
-      console.error('Attachments save failed', err)
-      setStatus('error')
-      setError('Network error')
-    }
+    })
+    writeChain.current = run
+    return run
   }
 
   async function onFiles(fileList: FileList | null) {

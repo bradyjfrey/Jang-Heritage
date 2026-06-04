@@ -60,7 +60,7 @@ export default async function HomePage() {
     payload.find({
       collection: 'documents',
       sort: '-updatedAt',
-      limit: 4,
+      limit: 6,
       depth: 1,
     }),
     payload.find({
@@ -168,7 +168,7 @@ export default async function HomePage() {
         </div>
         {recentEdits.docs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-8 md:mb-12">
-            {recentEdits.docs.slice(0, 3).map((doc) => (
+            {recentEdits.docs.slice(0, 6).map((doc) => (
               <RecentCard key={doc.id} doc={doc} />
             ))}
           </div>
@@ -190,9 +190,7 @@ export default async function HomePage() {
           <div className="order-2 md:order-1">
             <NeedsTranslationCard
               docs={needsTranslationResult.docs}
-              untranslatedCount={
-                translatableDocsCount.totalDocs - translatedDocIds.size
-              }
+              untranslatedCount={needsTranslationResult.totalDocs}
             />
           </div>
           <div className="order-1 md:order-2">

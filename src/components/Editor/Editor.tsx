@@ -39,6 +39,10 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
   // If-Unmodified-Since on each PATCH; the server's beforeChange hook
   // (checkIfUnmodifiedSince) returns 409 if the row has moved on.
   const [docUpdatedAt, setDocUpdatedAt] = useState<string>(doc.updatedAt)
+  // Always-fresh copy of the document's concurrency token, plus a promise
+  // chain that serializes every document-row PATCH (see patchDocument).
+  const docUpdatedAtRef = useRef<string>(doc.updatedAt)
+  const docWriteChain = useRef<Promise<unknown>>(Promise.resolve())
   const [transcriptionUpdatedAt, setTranscriptionUpdatedAt] = useState<string | null>(
     transcription?.updatedAt ?? null,
   )
@@ -143,12 +147,36 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
     return res.json()
   }
 
+  // Title and scans both write the document row and share one updatedAt
+  // token. A title autosave firing mid scan-upload would bump the token and
+  // 409 the upload (it captured the old one). Funnel every document PATCH
+  // through a promise chain so they run one at a time, each reading the
+  // freshest token from the ref — same-tab writers never conflict with each
+  // other, while a real cross-device edit still 409s as intended.
+  function patchDocument(body: object) {
+    const run = docWriteChain.current
+      .catch(() => {})
+      .then(async () => {
+        const json = await patch(
+          `/api/documents/${doc.id}`,
+          body,
+          docUpdatedAtRef.current,
+        )
+        const updated = json?.doc ?? json
+        if (updated?.updatedAt) {
+          docUpdatedAtRef.current = updated.updatedAt
+          setDocUpdatedAt(updated.updatedAt)
+        }
+        return json
+      })
+    docWriteChain.current = run.catch(() => {})
+    return run
+  }
+
   async function saveTitle(value: string) {
     if (value === doc.title && docUpdatedAt === doc.updatedAt) return
     await withSaveStatus(async () => {
-      const json = await patch(`/api/documents/${doc.id}`, { title: value }, docUpdatedAt)
-      const updated = json?.doc ?? json
-      if (updated?.updatedAt) setDocUpdatedAt(updated.updatedAt)
+      await patchDocument({ title: value })
     })
   }
 
@@ -220,13 +248,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
 
       const firstNewIndex = scans.length
       const newScans = [...scans, ...uploaded]
-      const json = await patch(
-        `/api/documents/${doc.id}`,
-        { scans: newScans.map((s) => s.id) },
-        docUpdatedAt,
-      )
-      const updated = json?.doc ?? json
-      if (updated?.updatedAt) setDocUpdatedAt(updated.updatedAt)
+      await patchDocument({ scans: newScans.map((s) => s.id) })
 
       setScans(newScans)
       setScanIndex(firstNewIndex)
