@@ -7,6 +7,7 @@ import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
 import { CopyButton } from '@/components/CopyButton/CopyButton'
 import { NoteBody } from '@/components/NoteBody/NoteBody'
+import { DeleteEntry } from '@/components/DocumentView/DeleteEntry'
 import { DetailsEditor } from '@/components/DocumentView/DetailsEditor'
 import { HistoryTimeline } from '@/components/DocumentView/HistoryTimeline'
 import { NoteAttachments } from '@/components/DocumentView/NoteAttachments'
@@ -15,6 +16,7 @@ import { PeopleEditor } from '@/components/DocumentView/PeopleEditor'
 import { PinButton } from '@/components/DocumentView/PinButton'
 import { ScanViewer } from '@/components/DocumentView/ScanViewer'
 import { TagEditor } from '@/components/DocumentView/TagEditor'
+import { TrashActions } from '@/components/DocumentView/TrashActions'
 import type { Media, Tag, User } from '@/payload-types'
 
 const HISTORY_LIMIT = 5
@@ -87,10 +89,14 @@ export default async function DocumentPage({
     redirect(`/login?redirect=${next}`)
   }
 
+  // trash: true so a soft-deleted entry still resolves here — it renders as a
+  // read-only "in Trash" page (banner + Restore / Delete Forever) rather than
+  // 404ing. Normal listings still exclude it.
   const doc = await payload
-    .findByID({ collection: 'documents', id: docId, depth: 2 })
+    .findByID({ collection: 'documents', id: docId, depth: 2, trash: true })
     .catch(() => null)
   if (!doc) notFound()
+  const isTrashed = Boolean(doc.deletedAt)
 
   const [transcriptions, translations, transcribersList, translatorsList] =
     await Promise.all([
@@ -237,7 +243,11 @@ export default async function DocumentPage({
 
   const dateLabel = formatDate(doc.dateOriginal, doc.dateOriginalPrecision)
   const isNote = doc.documentType === 'note'
-  const canEdit = user.role === 'admin' || user.role === 'editor'
+  const isEditor = user.role === 'admin' || user.role === 'editor'
+  // Trashed entries are read-only: every inline editor falls back to its
+  // display-only view. Editors still get the Restore / Delete Forever actions
+  // (gated on isEditor), just not the editing affordances.
+  const canEdit = isEditor && !isTrashed
 
   // Prefer lastEditedBy (auto-stamped on every save). Fall back to the
   // semantic transcriber/translator field for rows saved before the
@@ -257,15 +267,30 @@ export default async function DocumentPage({
     <>
       <Chrome user={user} active={isNote ? 'notes' : 'scans'} />
 
+      {isTrashed ? (
+        <div className="bg-paper-warm border-b border-[color:var(--border-strong)]">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center gap-2.5 text-sm text-ink">
+            <span className="text-gold text-base leading-none">⚠</span>
+            <span>
+              <span className="font-medium">In Trash.</span> This{' '}
+              {isNote ? 'note' : 'scan'} is hidden from the archive. Restore it,
+              or delete it permanently, using the actions on the right.
+            </span>
+          </div>
+        </div>
+      ) : null}
+
       <main className="max-w-7xl mx-auto px-4 py-8 md:px-8 md:py-10 grid grid-cols-1 gap-6 md:grid-cols-[1fr_18rem] md:gap-10">
         <div>
           <div className="mb-6">
             <div className="flex items-start justify-between gap-4 mb-2">
               <h1 className="font-serif-content text-2xl md:text-3xl">{doc.title}</h1>
-              <PinButton
-                documentId={doc.id}
-                initialPinned={Boolean(doc.pinned)}
-              />
+              {!isTrashed ? (
+                <PinButton
+                  documentId={doc.id}
+                  initialPinned={Boolean(doc.pinned)}
+                />
+              ) : null}
             </div>
             {dateLabel ? (
               <div className="text-sm text-ink-soft">{dateLabel}</div>
@@ -376,7 +401,9 @@ export default async function DocumentPage({
         </div>
 
         <aside className="space-y-6">
-          {canEdit ? (
+          {isTrashed && isEditor ? (
+            <TrashActions documentId={doc.id} isNote={isNote} />
+          ) : canEdit ? (
             <Link
               href={`/doc/${doc.id}/edit`}
               className="block w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors mt-8 md:mt-0"
@@ -431,6 +458,10 @@ export default async function DocumentPage({
           >
             ⤓ Export Bundle (zip)
           </a>
+
+          {canEdit ? (
+            <DeleteEntry documentId={doc.id} isNote={isNote} />
+          ) : null}
         </aside>
       </main>
     </>

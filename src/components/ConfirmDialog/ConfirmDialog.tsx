@@ -44,18 +44,18 @@ export function ConfirmDialog({
         e.preventDefault()
         onCancel()
       }}
-      className="bg-transparent p-0 backdrop:bg-black/40"
+      className="bg-transparent p-0 backdrop:bg-black/40 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[90vh]"
     >
       <div className="bg-paper border border-[color:var(--border-soft)] rounded-lg shadow-lg p-6 max-w-sm w-full">
         {title ? (
           <h2 className="font-serif-content text-lg mb-2">{title}</h2>
         ) : null}
         <p className="text-sm text-ink leading-relaxed mb-5">{message}</p>
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-between gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="bg-paper-warm border border-[color:var(--border-soft)] text-ink px-4 py-1.5 rounded-md text-sm hover:bg-white transition-colors"
+            className="bg-surface border border-seal/40 text-seal px-4 py-1.5 rounded-md text-sm font-medium hover:bg-seal hover:text-white hover:border-seal transition-colors"
           >
             {cancelLabel}
           </button>

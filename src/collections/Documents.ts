@@ -42,6 +42,12 @@ export const Documents: CollectionConfig = {
     update: isEditorOrAdmin,
     delete: isAdmin,
   },
+  // Soft-delete support. "Delete" in the UI sets `deletedAt` (move to Trash);
+  // find/findByID/count exclude trashed docs by default, so trashed entries
+  // drop out of every listing automatically. Restoring clears `deletedAt`;
+  // permanent deletion (which also removes R2 files) happens only from the
+  // Trash page. Nothing auto-purges.
+  trash: true,
   versions: {
     maxPerDoc: 20,
   },

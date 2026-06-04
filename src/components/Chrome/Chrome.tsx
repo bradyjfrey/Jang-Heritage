@@ -4,7 +4,7 @@ import type { User } from '@/payload-types'
 import { SearchBar } from './SearchBar'
 import { SignOutButton } from './SignOutButton'
 
-type ChromeActive = 'home' | 'notes' | 'scans'
+type ChromeActive = 'home' | 'notes' | 'scans' | 'trash'
 
 type Props = {
   user: User
@@ -99,14 +99,23 @@ export function Chrome({ user, active }: Props) {
             label="Scans"
             active={active === 'scans'}
           />
-          <Link
-            href="/settings"
-            className="ml-auto text-ink-soft hover:text-ink"
-          >
-            Settings
-          </Link>
-          <NavSeparator />
-          <SignOutButton />
+          <div className="ml-auto flex items-center">
+            {canCreate ? (
+              <>
+                <NavItem
+                  href="/trash"
+                  label="Trash"
+                  active={active === 'trash'}
+                />
+                <NavSeparator />
+              </>
+            ) : null}
+            <Link href="/settings" className="text-ink-soft hover:text-ink">
+              Settings
+            </Link>
+            <NavSeparator />
+            <SignOutButton />
+          </div>
         </div>
       </nav>
     </header>
