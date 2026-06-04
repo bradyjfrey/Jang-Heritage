@@ -5,6 +5,7 @@
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "build": "pnpm run generate:types && pnpm run generate:importmap && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
     "dev": "pnpm run generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next dev",
