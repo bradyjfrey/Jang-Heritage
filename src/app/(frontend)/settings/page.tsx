@@ -54,6 +54,59 @@ export default async function SettingsPage() {
             </div>
           </div>
         </section>
+
+        {user.role === 'admin' ? (
+          <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-6 mt-6">
+            <div className="text-[11px] uppercase tracking-wider text-ink-faint mb-4">
+              Data
+            </div>
+            <p className="text-sm text-ink-soft mb-5">
+              Download a snapshot of the archive. Images live in storage, so
+              include them only when you need them.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <a
+                  href="/api/admin/export?format=json"
+                  download
+                  className="inline-block bg-seal text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black transition-colors"
+                >
+                  Text &amp; data (JSON)
+                </a>
+                <p className="text-xs text-ink-faint mt-1.5">
+                  Every record&rsquo;s text and metadata without images.
+                </p>
+              </div>
+              <div>
+                <a
+                  href="/api/admin/export?format=images"
+                  download
+                  className="inline-block border border-[color:var(--border-soft)] bg-paper-warm px-4 py-2 rounded-md text-sm font-medium hover:border-gold transition-colors"
+                >
+                  Images (ZIP)
+                </a>
+                <p className="text-xs text-ink-faint mt-1.5">
+                  All scans and attachments, foldered by entry. The file size
+                  may be large.
+                </p>
+              </div>
+              <div>
+                <a
+                  href="/api/admin/export?format=full"
+                  download
+                  className="inline-block border border-[color:var(--border-soft)] bg-paper-warm px-4 py-2 rounded-md text-sm font-medium hover:border-gold transition-colors"
+                >
+                  Everything (ZIP)
+                </a>
+                <p className="text-xs text-ink-faint mt-1.5">
+                  A structured tree of <code>scan/</code> and <code>note/</code>{' '}
+                  folders, one per entry, each with its text files and a{' '}
+                  <code>media/</code> folder, for a complete backup.
+                </p>
+              </div>
+            </div>
+          </section>
+        ) : null}
       </div>
     </>
   )
