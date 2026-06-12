@@ -140,7 +140,18 @@ export async function GET(req: NextRequest) {
   archive.on('warning', (err) => {
     if (err.code !== 'ENOENT') console.error('archiver warning', err)
   })
-  archive.on('error', (err) => console.error('archiver error', err))
+
+  // Collect the archive into memory and return it as one complete body.
+  // A streamed (Readable.toWeb) response did not trigger a download in the
+  // app, whereas the JSON path's complete-body response does. Buffering is
+  // fine at current archive sizes; revisit streaming if archives grow into
+  // the multi-GB range.
+  const chunks: Buffer[] = []
+  archive.on('data', (c: Buffer) => chunks.push(c))
+  const archiveDone = new Promise<void>((resolve, reject) => {
+    archive.on('end', () => resolve())
+    archive.on('error', reject)
+  })
 
   const readme = [
     'Jang Heritage archive export',
@@ -229,17 +240,19 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  archive.finalize()
+  await archive.finalize()
+  await archiveDone
+  const buffer = Buffer.concat(chunks)
 
-  const webStream = Readable.toWeb(archive) as ReadableStream<Uint8Array>
   const filename = includeText
     ? `jang-heritage-archive-${date}.zip`
     : `jang-heritage-images-${date}.zip`
 
-  return new Response(webStream, {
+  return new Response(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': String(buffer.length),
       'Cache-Control': 'no-store',
     },
   })
