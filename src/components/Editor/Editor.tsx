@@ -52,6 +52,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
 
   // Save state
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [savedAt, setSavedAt] = useState<number | null>(null)
   // `now` is updated every 5s by the effect below while in 'saved' status,
   // so the derived `savedAgoLabel` keeps ticking. We can't call Date.now()
@@ -105,12 +106,14 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
     try {
       await work()
       setSavedAt(Date.now())
+      setSaveError(null)
       setSaveStatus('saved')
     } catch (err) {
       if (err instanceof Error && err.message === 'CONFLICT') {
         setSaveStatus('conflict')
       } else {
         console.error('Save failed', err)
+        setSaveError(err instanceof Error ? err.message : null)
         setSaveStatus('error')
       }
     }
@@ -124,6 +127,19 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
     return h
   }
 
+  // Pull Payload's first field-level validation message out of an error
+  // response so a failed save can say *why* (e.g. a maxLength violation on a
+  // hidden field) instead of a bare status code.
+  async function errorDetail(res: Response, fallback: string): Promise<string> {
+    try {
+      const json = await res.json()
+      const fieldMsg = json?.errors?.[0]?.data?.errors?.[0]?.message
+      return fieldMsg || json?.errors?.[0]?.message || fallback
+    } catch {
+      return fallback
+    }
+  }
+
   async function patch(url: string, body: object, ifUnmodifiedSince: string | null) {
     const res = await fetch(url, {
       method: 'PATCH',
@@ -132,7 +148,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
       body: JSON.stringify(body),
     })
     if (res.status === 409) throw new Error('CONFLICT')
-    if (!res.ok) throw new Error(`PATCH ${url} failed: ${res.status}`)
+    if (!res.ok) throw new Error(await errorDetail(res, `PATCH ${url} failed: ${res.status}`))
     return res.json()
   }
 
@@ -143,7 +159,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
       headers: jsonHeaders(),
       body: JSON.stringify(body),
     })
-    if (!res.ok) throw new Error(`POST ${url} failed: ${res.status}`)
+    if (!res.ok) throw new Error(await errorDetail(res, `POST ${url} failed: ${res.status}`))
     return res.json()
   }
 
@@ -307,7 +323,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
   function statusLabel(): { text: string; cls: string } {
     if (saveStatus === 'saving') return { text: 'Saving…', cls: 'save-status saving' }
     if (saveStatus === 'conflict') return { text: 'Conflict, refresh', cls: 'save-status' }
-    if (saveStatus === 'error') return { text: 'Save failed', cls: 'save-status' }
+    if (saveStatus === 'error') return { text: saveError || 'Save failed', cls: 'save-status' }
     if (saveStatus === 'saved') return { text: savedAgoLabel || 'Saved', cls: 'save-status' }
     return { text: 'Up to date', cls: 'save-status' }
   }

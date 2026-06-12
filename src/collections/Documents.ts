@@ -141,6 +141,9 @@ export const Documents: CollectionConfig = {
     {
       name: 'body',
       type: 'textarea',
+      // Payload defaults textarea maxLength to 40000. Raise it so long notes
+      // save cleanly.
+      maxLength: 1_000_000,
       admin: {
         condition: isNote,
         description:
@@ -150,6 +153,9 @@ export const Documents: CollectionConfig = {
     {
       name: 'bodySegmented',
       type: 'textarea',
+      // segmentChinese roughly doubles the character count; keep this cap
+      // proportionally higher than `body` so it never trips first.
+      maxLength: 2_500_000,
       admin: {
         condition: isNote,
         hidden: true,

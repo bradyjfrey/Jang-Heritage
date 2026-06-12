@@ -49,10 +49,17 @@ export const Transcriptions: CollectionConfig = {
       name: 'text',
       type: 'textarea',
       label: '中文录入',
+      // Payload defaults textarea maxLength to 40000. Raise it well past any
+      // realistic single transcription so long record books save cleanly.
+      maxLength: 1_000_000,
     },
     {
       name: 'textSegmented',
       type: 'textarea',
+      // segmentChinese inserts a space between every token, so this is roughly
+      // 2x the length of `text`. Keep its cap proportionally higher than
+      // `text` so it never trips before the (visible) source field does.
+      maxLength: 2_500_000,
       admin: {
         hidden: true,
         readOnly: true,

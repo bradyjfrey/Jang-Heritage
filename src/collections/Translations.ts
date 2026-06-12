@@ -39,6 +39,9 @@ export const Translations: CollectionConfig = {
       name: 'text',
       type: 'textarea',
       label: 'English translation',
+      // Payload defaults textarea maxLength to 40000; raise it so long
+      // translations save cleanly.
+      maxLength: 1_000_000,
     },
     {
       name: 'translator',
