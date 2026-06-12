@@ -81,7 +81,7 @@ export default async function SettingsPage() {
                 <a
                   href="/api/admin/export?format=images"
                   download
-                  className="inline-block border border-[color:var(--border-soft)] bg-paper-warm px-4 py-2 rounded-md text-sm font-medium hover:border-gold transition-colors"
+                  className="inline-block bg-seal text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black transition-colors"
                 >
                   Images (ZIP)
                 </a>
@@ -94,7 +94,7 @@ export default async function SettingsPage() {
                 <a
                   href="/api/admin/export?format=full"
                   download
-                  className="inline-block border border-[color:var(--border-soft)] bg-paper-warm px-4 py-2 rounded-md text-sm font-medium hover:border-gold transition-colors"
+                  className="inline-block bg-seal text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black transition-colors"
                 >
                   Everything (ZIP)
                 </a>
