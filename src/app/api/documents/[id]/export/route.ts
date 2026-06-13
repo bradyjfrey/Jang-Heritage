@@ -86,8 +86,15 @@ export async function GET(
   archive.on('warning', (err) => {
     if (err.code !== 'ENOENT') console.error('archiver warning', err)
   })
-  archive.on('error', (err) => {
-    console.error('archiver error', err)
+
+  // Collect into a complete body rather than streaming. A streamed
+  // (chunked, no Content-Length) attachment response does not trigger a
+  // download in Safari; a fully-assembled body with Content-Length does.
+  const chunks: Buffer[] = []
+  archive.on('data', (c: Buffer) => chunks.push(c))
+  const archiveDone = new Promise<void>((resolve, reject) => {
+    archive.on('end', () => resolve())
+    archive.on('error', reject)
   })
 
   // Manifest. Plain text so it opens anywhere.
@@ -147,15 +154,17 @@ export async function GET(
     }
   }
 
-  archive.finalize()
+  await archive.finalize()
+  await archiveDone
+  const buffer = Buffer.concat(chunks)
 
-  const webStream = Readable.toWeb(archive) as ReadableStream<Uint8Array>
   const filename = `${safeFilename(doc.title)}.zip`
 
-  return new Response(webStream, {
+  return new Response(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': String(buffer.length),
       'Cache-Control': 'no-store',
     },
   })

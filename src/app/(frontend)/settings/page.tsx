@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Chrome } from '@/components/Chrome/Chrome'
 import { ProfileForm } from '@/components/Settings/ProfileForm'
+import { DownloadButton } from '@/components/Settings/DownloadButton'
 
 export const metadata = {
   title: 'Settings · Jang Heritage',
@@ -66,38 +67,35 @@ export default async function SettingsPage() {
             </p>
             <div className="space-y-4">
               <div>
-                <a
+                <DownloadButton
                   href="/api/admin/export?format=json"
-                  download
-                  className="inline-block bg-seal text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black transition-colors"
+                  fallbackName="jang-heritage-export.json"
                 >
                   Text &amp; data (JSON)
-                </a>
+                </DownloadButton>
                 <p className="text-xs text-ink-faint mt-1.5">
                   Every record&rsquo;s text and metadata without images.
                 </p>
               </div>
               <div>
-                <a
+                <DownloadButton
                   href="/api/admin/export?format=images"
-                  download
-                  className="inline-block bg-seal text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black transition-colors"
+                  fallbackName="jang-heritage-images.zip"
                 >
                   Images (ZIP)
-                </a>
+                </DownloadButton>
                 <p className="text-xs text-ink-faint mt-1.5">
                   All scans and attachments, foldered by entry. The file size
                   may be large.
                 </p>
               </div>
               <div>
-                <a
+                <DownloadButton
                   href="/api/admin/export?format=full"
-                  download
-                  className="inline-block bg-seal text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black transition-colors"
+                  fallbackName="jang-heritage-archive.zip"
                 >
                   Everything (ZIP)
-                </a>
+                </DownloadButton>
                 <p className="text-xs text-ink-faint mt-1.5">
                   A structured tree of <code>scan/</code> and <code>note/</code>{' '}
                   folders, one per entry, each with its text files and a{' '}
