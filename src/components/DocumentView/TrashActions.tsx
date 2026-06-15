@@ -1,5 +1,6 @@
 'use client'
 
+import { CircleX, Undo2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -58,21 +59,27 @@ export function TrashActions({ documentId, isNote }: Props) {
         type="button"
         onClick={() => void run('restore')}
         disabled={busy !== null}
-        className="block w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors disabled:opacity-50 disabled:pointer-events-none"
+        className="flex items-center justify-center gap-1.5 w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors disabled:opacity-50 disabled:pointer-events-none"
       >
-        {busy === 'restore' ? 'Restoring…' : `↩ Restore ${Noun}`}
+        {busy === 'restore' ? (
+          'Restoring…'
+        ) : (
+          <>
+            <Undo2 className="w-4 h-4" aria-hidden="true" /> Restore {Noun}
+          </>
+        )}
       </button>
       <button
         type="button"
         onClick={() => setConfirmOpen(true)}
         disabled={busy !== null}
-        className="block w-full bg-black hover:bg-seal border border-black hover:border-seal rounded-lg p-3 text-sm font-bold text-white text-center transition-colors disabled:opacity-50 disabled:pointer-events-none"
+        className="flex items-center justify-center w-full bg-black hover:bg-seal border border-black hover:border-seal rounded-lg p-3 text-sm font-bold text-white text-center transition-colors disabled:opacity-50 disabled:pointer-events-none"
       >
         {busy === 'purge' ? (
           'Deleting…'
         ) : (
           <span className="inline-flex items-center justify-center gap-1.5">
-            <span className="text-lg leading-none">✕</span> Delete {Noun} Forever
+            <CircleX className="w-4 h-4" aria-hidden="true" /> Delete {Noun} Forever
           </span>
         )}
       </button>

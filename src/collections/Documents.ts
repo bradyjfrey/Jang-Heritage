@@ -185,9 +185,8 @@ export const Documents: CollectionConfig = {
       relationTo: 'media',
       hasMany: true,
       admin: {
-        condition: isNote,
         description:
-          'Supporting files for this note: screenshots, PDFs, photos, anything relevant.',
+          'Supporting files for this entry: work documents, screenshots, PDFs, photos, anything relevant.',
       },
     },
     {

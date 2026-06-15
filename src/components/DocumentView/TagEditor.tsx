@@ -1,5 +1,6 @@
 'use client'
 
+import { X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Tag } from '@/payload-types'
@@ -238,10 +239,10 @@ export function TagEditor({
               <button
                 type="button"
                 onClick={() => void remove(tag.id)}
-                className="text-current opacity-60 hover:opacity-100"
+                className="inline-flex items-center text-current opacity-60 hover:opacity-100"
                 aria-label={`Remove ${tag.name}`}
               >
-                ×
+                <X className="w-3 h-3" aria-hidden="true" />
               </button>
             </span>
           ))}

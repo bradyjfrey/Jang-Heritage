@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -241,7 +242,7 @@ export function NoteEditor({ document: doc, user }: Props) {
             href={backHref}
             className="text-ink-soft hover:text-ink text-sm flex items-center gap-1"
           >
-            <span>←</span> Back
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Back
           </Link>
           <span className={`${status.cls} ml-auto`} style={statusStyle}>
             <span className="dot" style={dotStyle}></span>
@@ -265,7 +266,7 @@ export function NoteEditor({ document: doc, user }: Props) {
           href={backHref}
           className="text-ink-soft hover:text-ink text-sm flex items-center gap-1"
         >
-          <span>←</span> Back
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Back
         </Link>
         <div className="h-6 w-px bg-[color:var(--border-soft)]"></div>
         <div className="flex-1 min-w-0">

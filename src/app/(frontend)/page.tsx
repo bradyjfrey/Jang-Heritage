@@ -1,4 +1,5 @@
 import { headers as getHeaders } from 'next/headers'
+import { Pin } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
@@ -314,9 +315,7 @@ function PinnedCard({ docs }: { docs: Document[] }) {
     <section className="bg-surface border border-[color:var(--border-soft)] rounded-lg p-5 h-full">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-serif-content text-base flex items-center gap-2">
-          <svg className="w-4 h-4 text-seal" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
-          </svg>
+          <Pin className="w-4 h-4 text-seal" fill="currentColor" aria-hidden="true" />
           Pinned
         </h3>
         <span className="text-xs text-ink-soft">

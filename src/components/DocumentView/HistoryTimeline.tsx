@@ -1,5 +1,6 @@
 'use client'
 
+import { ChevronDown, ChevronUp, Plus } from 'lucide-react'
 import { useState } from 'react'
 
 type Entry = {
@@ -53,15 +54,16 @@ export function HistoryTimeline({ entries, collapsedLimit }: Props) {
             {expanded ? (
               <>
                 <span>Show less</span>
-                <span className="text-base leading-none">▴</span>
+                <ChevronUp className="w-3.5 h-3.5" aria-hidden="true" />
               </>
             ) : (
               <>
+                <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>
-                  + {hiddenCount} earlier{' '}
+                  {hiddenCount} earlier{' '}
                   {hiddenCount === 1 ? 'edit' : 'edits'}
                 </span>
-                <span className="text-base leading-none">▾</span>
+                <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
               </>
             )}
           </button>

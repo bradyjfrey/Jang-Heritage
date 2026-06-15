@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { NotebookText, Plus } from 'lucide-react'
 import type { User } from '@/payload-types'
 
 import { SearchBar } from './SearchBar'
@@ -48,13 +49,13 @@ export function Chrome({ user, active }: Props) {
                 href="/add/note"
                 className="bg-surface border border-seal/40 text-seal px-3 py-1.5 rounded-md text-sm font-medium hover:bg-seal hover:text-white hover:border-seal inline-flex items-center gap-1.5 transition-colors"
               >
-                <span className="text-base leading-none">+</span> New Note
+                <NotebookText className="w-4 h-4" aria-hidden="true" /> New Note
               </Link>
               <Link
                 href="/add"
                 className="bg-seal text-white border border-seal px-3.5 py-1.5 rounded-md text-sm font-medium hover:bg-surface hover:text-seal inline-flex items-center gap-1.5 transition-colors"
               >
-                <span className="text-base leading-none">+</span> New Scan
+                <Plus className="w-4 h-4" aria-hidden="true" /> New Scan
               </Link>
             </>
           ) : null}
@@ -73,13 +74,13 @@ export function Chrome({ user, active }: Props) {
             href="/add/note"
             className="bg-surface border border-seal/40 text-seal px-3 py-2 rounded-md text-sm font-medium inline-flex items-center justify-center gap-1.5 transition-colors"
           >
-            <span className="text-base leading-none">+</span> New Note
+            <NotebookText className="w-4 h-4" aria-hidden="true" /> New Note
           </Link>
           <Link
             href="/add"
             className="bg-seal text-white border border-seal px-3.5 py-2 rounded-md text-sm font-medium inline-flex items-center justify-center gap-1.5 transition-colors"
           >
-            <span className="text-base leading-none">+</span> New Scan
+            <Plus className="w-4 h-4" aria-hidden="true" /> New Scan
           </Link>
         </div>
       ) : null}

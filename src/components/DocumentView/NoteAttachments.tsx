@@ -1,5 +1,6 @@
 'use client'
 
+import { Plus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog'
@@ -13,6 +14,9 @@ type Props = {
   // The editor renders a pane header that already says "Attachments";
   // pass false there to suppress the duplicate inline heading.
   showHeading?: boolean
+  // Noun used in user-facing copy ("removed from this note" vs "scan").
+  // Notes are the default; scan pages pass 'scan'.
+  entityNoun?: string
 }
 
 type SaveStatus = 'idle' | 'uploading' | 'saving' | 'error' | 'conflict'
@@ -31,6 +35,7 @@ export function NoteAttachments({
   initialUpdatedAt,
   canEdit = true,
   showHeading = true,
+  entityNoun = 'note',
 }: Props) {
   const router = useRouter()
   const [attachments, setAttachments] = useState<Media[]>(initialAttachments)
@@ -211,7 +216,7 @@ export function NoteAttachments({
               htmlFor={`attach-input-${documentId}`}
               className="aspect-square flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-[color:var(--border-soft)] bg-paper-warm/50 text-ink-soft text-xs hover:bg-seal hover:text-white hover:border-seal cursor-pointer transition-colors"
             >
-              <span className="text-2xl leading-none">+</span>
+              <Plus className="w-6 h-6" aria-hidden="true" />
               <span>Add files</span>
             </label>
           </li>
@@ -220,14 +225,14 @@ export function NoteAttachments({
 
       {documentId == null ? (
         <p className="text-xs text-ink-faint mt-3">
-          Save the note first, then you can add attachments.
+          Save the {entityNoun} first, then you can add attachments.
         </p>
       ) : null}
 
       <ConfirmDialog
         open={pendingDeleteId !== null}
         title="Remove attachment?"
-        message={`"${pendingDeleteLabel}" will be removed from this note. This can't be undone.`}
+        message={`"${pendingDeleteLabel}" will be removed from this ${entityNoun}. This can't be undone.`}
         confirmLabel="Remove"
         destructive
         onConfirm={() => {
@@ -380,7 +385,7 @@ function EditCard({
         aria-label="Remove attachment"
         title="Remove attachment"
       >
-        ×
+        <X className="w-3 h-3" aria-hidden="true" />
       </button>
       <input
         type="text"

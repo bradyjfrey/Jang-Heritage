@@ -1,4 +1,5 @@
 import { headers as getHeaders } from 'next/headers'
+import { Download, Pencil, TriangleAlert } from 'lucide-react'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { getPayload } from 'payload'
@@ -268,9 +269,9 @@ export default async function DocumentPage({
       <Chrome user={user} active={isNote ? 'notes' : 'scans'} />
 
       {isTrashed ? (
-        <div className="bg-paper-warm border-b border-[color:var(--border-strong)]">
+        <div className="bg-white border-b border-[color:var(--border-soft)]">
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center gap-2.5 text-sm text-ink">
-            <span className="text-gold text-base leading-none">⚠</span>
+            <TriangleAlert className="w-4 h-4 text-gold shrink-0" aria-hidden="true" />
             <span>
               <span className="font-medium">In Trash.</span> This{' '}
               {isNote ? 'note' : 'scan'} is hidden from the archive. Restore it,
@@ -336,6 +337,23 @@ export default async function DocumentPage({
 
           {!isNote && scans.length > 0 ? (
             <ScanViewer scans={scans} title={doc.title} />
+          ) : null}
+
+          {!isNote ? (
+            <div className="mb-8">
+              <NoteAttachments
+                documentId={doc.id}
+                initialAttachments={(Array.isArray(doc.attachments)
+                  ? doc.attachments
+                  : []
+                ).filter(
+                  (a): a is Media => typeof a === 'object' && a !== null,
+                )}
+                initialUpdatedAt={doc.updatedAt}
+                canEdit={canEdit}
+                entityNoun="scan"
+              />
+            </div>
           ) : null}
 
           {!isNote && transcription?.text ? (
@@ -406,11 +424,19 @@ export default async function DocumentPage({
           ) : canEdit ? (
             <Link
               href={`/doc/${doc.id}/edit`}
-              className="block w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors mt-8 md:mt-0"
+              className="flex items-center justify-center gap-1.5 w-full text-center bg-seal text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-black transition-colors mt-8 md:mt-0"
             >
+              <Pencil className="w-4 h-4" aria-hidden="true" />
               {isNote ? 'Edit Note' : 'Edit Scan'}
             </Link>
           ) : null}
+
+          <a
+            href={`/api/documents/${doc.id}/export`}
+            className="flex items-center justify-center gap-1.5 w-full bg-paper-warm hover:bg-seal border border-[color:var(--border-soft)] hover:border-seal rounded-lg p-3 text-sm font-bold text-ink-soft hover:text-white text-center transition-colors"
+          >
+            <Download className="w-4 h-4" aria-hidden="true" /> Export Bundle (zip)
+          </a>
 
           <DetailsEditor
             documentId={doc.id}
@@ -451,13 +477,6 @@ export default async function DocumentPage({
           ) : null}
 
           <HistoryTimeline entries={allEntries} collapsedLimit={HISTORY_LIMIT} />
-
-          <a
-            href={`/api/documents/${doc.id}/export`}
-            className="block w-full bg-paper-warm hover:bg-seal border border-[color:var(--border-soft)] hover:border-seal rounded-lg p-3 text-sm font-bold text-ink-soft hover:text-white text-center transition-colors"
-          >
-            ⤓ Export Bundle (zip)
-          </a>
 
           {canEdit ? (
             <DeleteEntry documentId={doc.id} isNote={isNote} />

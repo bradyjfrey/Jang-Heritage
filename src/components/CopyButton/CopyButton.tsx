@@ -1,9 +1,10 @@
 'use client'
 
+import { Check, Copy } from 'lucide-react'
 import { useState } from 'react'
 
-// Two-square icon clipboard button matching the mockup. Solid back square
-// in seal red, outlined front square filled with the surrounding paper.
+// Clipboard button using the default lucide copy icon, swapping to a check
+// on success for clear feedback.
 //
 // Takes a plain string rather than a getter so it can be rendered from
 // server components without the function-across-boundary error.
@@ -37,19 +38,11 @@ export function CopyButton({ text, label }: Props) {
           : 'text-ink opacity-45 hover:opacity-100'
       }`}
     >
-      <svg viewBox="0 0 24 24" width="16" height="16">
-        <rect x="8" y="8" width="12" height="12" rx="1.5" fill="currentColor" />
-        <rect
-          x="4"
-          y="4"
-          width="12"
-          height="12"
-          rx="1.5"
-          fill="var(--paper)"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        />
-      </svg>
+      {copied ? (
+        <Check className="w-4 h-4" aria-hidden="true" />
+      ) : (
+        <Copy className="w-4 h-4" aria-hidden="true" />
+      )}
     </button>
   )
 }

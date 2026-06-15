@@ -1,5 +1,6 @@
 // One-shot zip export for a single document. Bundles:
 //   - For scan-bearing docs: every scan binary, fetched directly from R2.
+//   - attachments/: any supporting files (work docs, PDFs, photos)
 //   - transcription.txt (if non-empty)
 //   - translation.txt (if non-empty)
 //   - notes.txt (the sidecar `notes` field, not the note body)
@@ -81,6 +82,9 @@ export async function GET(
   const scans = (Array.isArray(doc.scans) ? doc.scans : []).filter(
     (s): s is Media => typeof s === 'object' && s !== null,
   )
+  const attachments = (
+    Array.isArray(doc.attachments) ? doc.attachments : []
+  ).filter((a): a is Media => typeof a === 'object' && a !== null)
 
   const archive = archiver('zip', { zlib: { level: 6 } })
   archive.on('warning', (err) => {
@@ -130,29 +134,35 @@ export async function GET(
     archive.append(doc.body, { name: 'body.md' })
   }
 
-  // Stream every scan from R2 into the zip. Sequential to keep memory in
-  // check; archiver will queue and flush as it goes.
+  // Stream every binary from R2 into the zip. Sequential to keep memory in
+  // check; archiver will queue and flush as it goes. Scans and attachments
+  // land in separate folders so an export of a scan with supporting work
+  // documents keeps them distinct.
   const bucket = process.env.S3_BUCKET || ''
-  for (const scan of scans) {
-    if (!scan.filename) continue
-    try {
-      const obj = await s3.send(
-        new GetObjectCommand({ Bucket: bucket, Key: scan.filename }),
-      )
-      const body = obj.Body
-      // The AWS SDK types `Body` as a union (Node Readable | Web ReadableStream
-      // | Blob) so it can target multiple runtimes. In Node it's always a
-      // Node Readable — we runtime-check for `.pipe` and cast through unknown
-      // to the concrete Readable archiver expects.
-      if (body && typeof (body as { pipe?: unknown }).pipe === 'function') {
-        archive.append(body as unknown as Readable, {
-          name: `scans/${scan.filename}`,
-        })
+  async function appendFromR2(media: Media[], folder: string) {
+    for (const file of media) {
+      if (!file.filename) continue
+      try {
+        const obj = await s3.send(
+          new GetObjectCommand({ Bucket: bucket, Key: file.filename }),
+        )
+        const body = obj.Body
+        // The AWS SDK types `Body` as a union (Node Readable | Web ReadableStream
+        // | Blob) so it can target multiple runtimes. In Node it's always a
+        // Node Readable — we runtime-check for `.pipe` and cast through unknown
+        // to the concrete Readable archiver expects.
+        if (body && typeof (body as { pipe?: unknown }).pipe === 'function') {
+          archive.append(body as unknown as Readable, {
+            name: `${folder}/${file.filename}`,
+          })
+        }
+      } catch (err) {
+        console.error(`Failed to fetch ${folder} file ${file.filename}`, err)
       }
-    } catch (err) {
-      console.error(`Failed to fetch scan ${scan.filename}`, err)
     }
   }
+  await appendFromR2(scans, 'scans')
+  await appendFromR2(attachments, 'attachments')
 
   await archive.finalize()
   await archiveDone

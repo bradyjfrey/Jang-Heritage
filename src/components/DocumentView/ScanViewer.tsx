@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowDownToLine, Maximize } from 'lucide-react'
 import { useState } from 'react'
 import type { Media } from '@/payload-types'
 
@@ -69,18 +70,18 @@ export function ScanViewer({ scans, title }: Props) {
             href={current.url || '#'}
             target="_blank"
             rel="noopener noreferrer"
-            className="pill-btn"
+            className="pill-btn inline-flex items-center gap-1.5 hover:!bg-seal hover:!text-white hover:!border-seal"
             title="Open full size in a new tab"
           >
-            ⛶ Full screen
+            <Maximize className="w-3.5 h-3.5" aria-hidden="true" /> Full Screen
           </a>
           <a
             href={current.url || '#'}
             download={current.filename || ''}
-            className="pill-btn"
+            className="pill-btn inline-flex items-center gap-1.5 hover:!bg-seal hover:!text-white hover:!border-seal"
             title="Download original"
           >
-            ⤓ Download original
+            <ArrowDownToLine className="w-3.5 h-3.5" aria-hidden="true" /> Download Original
           </a>
         </div>
       </div>

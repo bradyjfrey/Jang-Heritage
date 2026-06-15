@@ -1,5 +1,6 @@
 'use client'
 
+import { CircleX } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -54,13 +55,13 @@ export function DeleteEntry({ documentId, isNote }: Props) {
         type="button"
         onClick={() => setOpen(true)}
         disabled={deleting}
-        className="block w-full bg-black hover:bg-seal border border-black hover:border-seal rounded-lg p-3 text-sm font-bold text-white text-center transition-colors disabled:opacity-50 disabled:pointer-events-none"
+        className="flex items-center justify-center w-full bg-black hover:bg-seal border border-black hover:border-seal rounded-lg p-3 text-sm font-bold text-white text-center transition-colors disabled:opacity-50 disabled:pointer-events-none"
       >
         {deleting ? (
           'Deleting…'
         ) : (
           <span className="inline-flex items-center justify-center gap-1.5">
-            <span className="text-lg leading-none">✕</span> Delete {Noun}
+            <CircleX className="w-4 h-4" aria-hidden="true" /> Delete {Noun}
           </span>
         )}
       </button>

@@ -1,5 +1,6 @@
 'use client'
 
+import { Download } from 'lucide-react'
 import { useState } from 'react'
 
 type Props = {
@@ -54,8 +55,9 @@ export function DownloadButton({ href, fallbackName, children }: Props) {
         type="button"
         onClick={handleClick}
         disabled={state === 'working'}
-        className="inline-flex items-center bg-seal text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black transition-colors disabled:opacity-70 disabled:cursor-wait"
+        className="inline-flex items-center gap-1.5 bg-seal text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black transition-colors disabled:opacity-70 disabled:cursor-wait"
       >
+        <Download className="w-4 h-4" aria-hidden="true" />
         {children}
       </button>
       {state === 'working' ? (

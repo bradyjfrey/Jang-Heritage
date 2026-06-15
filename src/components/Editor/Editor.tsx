@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowDownToLine, ArrowLeft, ArrowRight, Maximize, Minus, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Document, Media, Transcription, Translation, User } from '@/payload-types'
@@ -350,7 +351,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
             href={`/doc/${doc.id}`}
             className="text-ink-soft hover:text-ink text-sm flex items-center gap-1"
           >
-            <span>←</span> Back
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Back
           </Link>
           <span className={`${status.cls} ml-auto`} style={statusStyle}>
             <span className="dot" style={dotStyle}></span>
@@ -373,7 +374,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
           href={`/doc/${doc.id}`}
           className="text-ink-soft hover:text-ink text-sm flex items-center gap-1"
         >
-          <span>←</span> Back
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Back
         </Link>
         <div className="h-6 w-px bg-[color:var(--border-soft)]"></div>
         <div className="flex-1 min-w-0">
@@ -399,11 +400,12 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
           <div className={styles.paneHeader}>
             <div className="flex items-center gap-2">
               <button
-                className="pill-btn"
+                className="pill-btn inline-flex items-center justify-center"
                 onClick={() => setScanIndex(Math.max(0, scanIndex - 1))}
                 disabled={scanIndex === 0}
+                aria-label="Previous scan"
               >
-                ←
+                <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
               <span className="text-ink-soft">
                 Scan{' '}
@@ -413,13 +415,14 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
                 of {scans.length}
               </span>
               <button
-                className="pill-btn"
+                className="pill-btn inline-flex items-center justify-center"
                 onClick={() =>
                   setScanIndex(Math.min(scans.length - 1, scanIndex + 1))
                 }
                 disabled={scanIndex >= scans.length - 1}
+                aria-label="Next scan"
               >
-                →
+                <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
             </div>
             <div className="flex items-center gap-1.5">
@@ -436,7 +439,7 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
                 }}
               />
               <button
-                className="pill-btn"
+                className="pill-btn inline-flex items-center gap-1.5"
                 onClick={() => addScanInputRef.current?.click()}
                 disabled={scanUpload.status === 'uploading'}
                 title={
@@ -448,20 +451,25 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
                   scanUpload.status === 'error' ? { color: 'var(--seal)' } : undefined
                 }
               >
-                {scanUpload.status === 'uploading'
-                  ? `Uploading ${scanUpload.done}/${scanUpload.total}…`
-                  : scanUpload.status === 'error'
-                    ? 'Retry add'
-                    : '+ Add scan'}
+                {scanUpload.status === 'uploading' ? (
+                  `Uploading ${scanUpload.done}/${scanUpload.total}…`
+                ) : scanUpload.status === 'error' ? (
+                  'Retry add'
+                ) : (
+                  <>
+                    <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add scan
+                  </>
+                )}
               </button>
               <div className="h-5 w-px bg-[color:var(--border-soft)] mx-0.5"></div>
               <button
-                className="pill-btn"
+                className="pill-btn inline-flex items-center justify-center"
                 onClick={zoomOut}
                 disabled={!currentScan || zoom <= 25}
                 title="Zoom out"
+                aria-label="Zoom out"
               >
-                −
+                <Minus className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
               <button
                 className="pill-btn"
@@ -472,15 +480,16 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
                 {zoom}%
               </button>
               <button
-                className="pill-btn"
+                className="pill-btn inline-flex items-center justify-center"
                 onClick={zoomIn}
                 disabled={!currentScan || zoom >= 400}
                 title="Zoom in"
+                aria-label="Zoom in"
               >
-                +
+                <Plus className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
               <a
-                className="pill-btn"
+                className="pill-btn inline-flex items-center justify-center"
                 href={currentScan?.url || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -488,17 +497,17 @@ export function Editor({ document: doc, transcription, translation, user }: Prop
                 style={!currentScan ? { pointerEvents: 'none', opacity: 0.5 } : undefined}
                 title="Open full size in a new tab"
               >
-                ⛶
+                <Maximize className="w-3.5 h-3.5" aria-hidden="true" />
               </a>
               <a
-                className="pill-btn"
+                className="pill-btn inline-flex items-center justify-center"
                 href={currentScan?.url || '#'}
                 download={currentScan?.filename || ''}
                 aria-disabled={!currentScan}
                 style={!currentScan ? { pointerEvents: 'none', opacity: 0.5 } : undefined}
                 title="Download original"
               >
-                ⤓
+                <ArrowDownToLine className="w-3.5 h-3.5" aria-hidden="true" />
               </a>
             </div>
           </div>
